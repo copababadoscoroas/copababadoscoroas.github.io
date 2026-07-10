@@ -24,10 +24,11 @@ const SELECOES = [
     confirmada: true,
     historia: 'A seleção canarinho do baba. Fundada pelos coroas mais antigos do grupo, promete jogo bonito e resenha garantida no terceiro tempo.',
     elenco: [
-      { n: 1, nome: 'Careca', pos: 'GOL' }, { n: 2, nome: 'Zé da Van', pos: 'FIX' },
-      { n: 5, nome: 'Bigode', pos: 'ALA' }, { n: 7, nome: 'Neguinho', pos: 'ALA' },
-      { n: 9, nome: 'Galego', pos: 'PIV' }, { n: 10, nome: 'Mestre Dão', pos: 'PIV' },
-      { n: 11, nome: 'Serginho', pos: 'ALA' },
+      { n: 2, nome: 'Mardoka La' }, { n: 3, nome: 'Naná' },
+      { n: 10, nome: 'Emanoel Aleixo' }, { n: 11, nome: 'Nilton' },
+      { n: 13, nome: 'Geo Cruz' }, { n: 14, nome: 'Pezão' },
+      { n: 19, nome: 'Fábio Nunes' }, { n: 22, nome: 'Ramigol', pos: 'GOL' },
+      { n: 58, nome: 'Deliano' },
     ],
   },
   {
@@ -35,10 +36,11 @@ const SELECOES = [
     confirmada: true,
     historia: 'Os vikings do sertão! Frios no começo, mas quando esquentam viram avalanche. Prometem faro de gol de norte a sul do campo.',
     elenco: [
-      { n: 1, nome: 'Muralha', pos: 'GOL' }, { n: 3, nome: 'Tonho', pos: 'FIX' },
-      { n: 6, nome: 'Cabeça', pos: 'ALA' }, { n: 8, nome: 'Russo', pos: 'ALA' },
-      { n: 9, nome: 'Viking', pos: 'PIV' }, { n: 10, nome: 'Dedé', pos: 'PIV' },
-      { n: 11, nome: 'Loiro', pos: 'ALA' },
+      { n: 3, nome: 'França' }, { n: 5, nome: 'Fabio Phillype' },
+      { n: 10, nome: 'M. Cabral' }, { n: 15, nome: 'Galdene Souza' },
+      { n: 29, nome: 'Andrezinho' }, { n: 33, nome: 'Jackson' },
+      { n: 40, nome: 'Darlan Galdino' }, { n: 70, nome: 'Eduardo Aleixo' },
+      { n: 77, nome: 'Marcelo Paca' },
     ],
   },
   {
@@ -46,10 +48,11 @@ const SELECOES = [
     confirmada: true,
     historia: 'Les bleus do São Francisco. Elegantes fora de campo, caçadores dentro dele. Prometem futebol de champagne no calor do sertão.',
     elenco: [
-      { n: 1, nome: 'Formiga', pos: 'GOL' }, { n: 2, nome: 'Chiquinho', pos: 'FIX' },
-      { n: 6, nome: 'Pelado', pos: 'ALA' }, { n: 8, nome: 'Vaqueiro', pos: 'ALA' },
-      { n: 9, nome: 'Touro', pos: 'PIV' }, { n: 10, nome: 'Mimoso', pos: 'PIV' },
-      { n: 11, nome: 'Cascão', pos: 'ALA' },
+      { n: 2, nome: 'Eduardo', pos: 'GOL' }, { n: 4, nome: 'Henrique' },
+      { n: 5, nome: 'Leonardo' }, { n: 7, nome: 'Silvan' },
+      { n: 8, nome: 'Lueno Nascimento' }, { n: 9, nome: 'Cristiano' },
+      { n: 10, nome: 'Bruno Rodrigo' }, { n: 11, nome: 'Elvis Neto' },
+      { n: 13, nome: 'Clodoaldo' },
     ],
   },
   {

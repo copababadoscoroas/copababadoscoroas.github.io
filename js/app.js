@@ -244,7 +244,7 @@ function abrirSelecao(id) {
     <div class="card">
       <span class="chip">Elenco</span>
       ${s.elenco.length ? `<ul class="lista-elenco" style="margin-top:8px">
-        ${s.elenco.map((j) => `<li><span class="num">${j.n}</span> ${j.nome} <span class="pos-tag">${j.pos}</span></li>`).join('')}
+        ${s.elenco.map((j) => `<li><span class="num">${j.n}</span> ${j.nome} ${j.pos ? `<span class="pos-tag">${j.pos}</span>` : ''}</li>`).join('')}
       </ul>` : '<p class="vazio">Escalação será divulgada em breve.</p>'}
     </div>` : `
     <div class="card">
