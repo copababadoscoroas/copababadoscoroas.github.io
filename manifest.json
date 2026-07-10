@@ -1,16 +1,17 @@
 {
   "name": "II Copa Baba dos Coroas",
   "short_name": "Copa Baba",
-  "description": "II Copa Baba dos Coroas — Canindé de São Francisco/SE. Tema: Seleções.",
+  "description": "II Copa Baba dos Coroas — Edição Copa do Mundo. Canindé de São Francisco/SE.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0c0e16",
-  "theme_color": "#0c0e16",
+  "background_color": "#0b101c",
+  "theme_color": "#0b101c",
   "icons": [
     {
-      "src": "assets/logo-baba.png",
+      "src": "assets/logo-copa.jpg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/jpeg",
+      "purpose": "any"
     }
   ]
 }
