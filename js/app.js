@@ -654,15 +654,16 @@ function renderHome() {
     : '<p class="vazio">A copa ainda não começou! Fique de olho na tabela. ⚽</p>';
 
   const confirmadas = SELECOES.filter((s) => s.confirmada);
+  const faltam = SELECOES.length - confirmadas.length;
   $('#lideres').innerHTML = confirmadas.map((s) => `
     <div class="stat">
       <div class="v">${s.bandeira}</div>
       <div class="r">${s.nome} ✅</div>
-    </div>`).join('') + `
+    </div>`).join('') + (faltam > 0 ? `
     <div class="stat" style="opacity:.65">
       <div class="v">❔</div>
-      <div class="r">+${SELECOES.length - confirmadas.length} no sorteio</div>
-    </div>`;
+      <div class="r">+${faltam} no sorteio</div>
+    </div>` : '');
 }
 
 // ---------- Inicialização ----------
