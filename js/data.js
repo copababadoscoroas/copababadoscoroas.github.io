@@ -96,7 +96,16 @@ const JOGOS = [
 //   { jogo: 1, titulo: 'Brasil × Noruega', fotos: [
 //     { id: 'f1', liberada: false, legenda: 'Lance da partida', src: 'assets/fotos/f1.jpg' },
 //   ]},
-const FOTOS = [];
+const FOTOS = [
+  { jogo: 1, titulo: 'Exemplo — assim ficarão as fotos de cada jogo', fotos: [
+    { id: 'ex1', liberada: true, legenda: 'Amostra grátis' },
+    { id: 'ex2', liberada: false, legenda: 'Comemoração da torcida' },
+    { id: 'ex3', liberada: false, legenda: 'Lance da partida' },
+    { id: 'ex4', liberada: false, legenda: 'Foto oficial das equipes' },
+    { id: 'ex5', liberada: false, legenda: 'Defesa do goleiro' },
+    { id: 'ex6', liberada: false, legenda: 'Resenha pós-jogo' },
+  ]},
+];
 
 // --- Vídeos -----------------------------------------------------
 const VIDEOS = [
