@@ -304,11 +304,14 @@ function abrirPacote() {
   const raras = figurinhasRaras();
   $('#pacote-aberto').innerHTML = novas.map((f) => {
     const rara = raras.has(`${f.selecao.id}-${f.jogador.n}`);
+    const visual = f.jogador.foto
+      ? `<img class="foto-fig" src="${f.jogador.foto}" alt="${f.jogador.nome}">`
+      : `<span class="rosto">${f.selecao.bandeira}</span>
+         <b>${f.jogador.nome}</b>
+         <span>#${f.jogador.n} · ${f.selecao.nome}</span>`;
     return `
-    <div class="figurinha colada ${rara ? 'rara' : ''}">
-      <span class="rosto">${f.selecao.bandeira}</span>
-      <b>${f.jogador.nome}</b>
-      <span>#${f.jogador.n} · ${f.selecao.nome}</span>
+    <div class="figurinha colada ${rara ? 'rara' : ''} ${f.jogador.foto ? 'com-foto' : ''}">
+      ${visual}
       ${rara ? '<span class="selo-rara">⚽ ARTILHEIRO</span>' : ''}
     </div>`;
   }).join('');
@@ -360,8 +363,11 @@ function renderAlbum() {
         const chave = `${s.id}-${j.n}`;
         const qtd = album[chave] || 0;
         const rara = qtd && raras.has(chave);
+        const visual = j.foto
+          ? `<img class="foto-fig" src="${j.foto}" alt="${j.nome}" loading="lazy">`
+          : `<span class="rosto">${s.bandeira}</span><b>${j.nome}</b><span>#${j.n}</span>`;
         return qtd
-          ? `<div class="figurinha colada ${rara ? 'rara' : ''}">${qtd > 1 ? `<span class="rep">×${qtd}</span>` : ''}<span class="rosto">${s.bandeira}</span><b>${j.nome}</b><span>#${j.n}</span>${rara ? '<span class="selo-rara">⚽ ARTILHEIRO</span>' : ''}</div>`
+          ? `<div class="figurinha colada ${rara ? 'rara' : ''} ${j.foto ? 'com-foto' : ''}">${visual}${qtd > 1 ? `<span class="rep">×${qtd}</span>` : ''}${rara ? '<span class="selo-rara">⚽ ARTILHEIRO</span>' : ''}</div>`
           : `<div class="figurinha"><span class="interroga">?</span><span>#${j.n}</span></div>`;
       }).join('')}
     </div>`).join('') + (pendentes ? `
