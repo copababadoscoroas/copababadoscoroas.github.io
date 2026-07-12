@@ -1,6 +1,6 @@
 // ============================================================
 // II COPA BABA DOS COROAS — Dados do torneio
-// SELEÇÕES OFICIAIS (sorteadas): Brasil, Noruega, França, Uruguai, Portugal.
+// SELEÇÕES OFICIAIS (sorteadas): Brasil, Noruega, França, Argentina, Portugal.
 // Elencos ainda com apelidos de exemplo — trocar pelos jogadores reais.
 // Placares em branco: o admin lança pelo painel (admin.html).
 // FORMATO: 5 seleções, todos contra todos (pontos corridos).
@@ -64,14 +64,15 @@ const SELECOES = [
     ],
   },
   {
-    id: 'uruguai', nome: 'Uruguai', bandeira: '🇺🇾', cor: '#7AB3E0', cor2: '#FCD116',
+    id: 'argentina', nome: 'Argentina', bandeira: '🇦🇷', cor: '#75AADB', cor2: '#FFFFFF',
     confirmada: true,
-    historia: 'A garra charrua do baba. Time de raça que não entrega um lance sequer — se tiver que sair mordendo, sai. Nunca dê a partida por perdida contra a celeste.',
+    historia: 'Os hermanos do sertão. Time raçudo, chega junto na dividida e não perde uma discussão com o juiz. Vamos, vamos, Argentina!',
     elenco: [
-      { n: 1, nome: 'Guerra', pos: 'GOL' }, { n: 3, nome: 'Cebola', pos: 'FIX' },
-      { n: 5, nome: 'Charrua', pos: 'ALA' }, { n: 7, nome: 'Nico', pos: 'ALA' },
-      { n: 9, nome: 'Lobo', pos: 'PIV' }, { n: 10, nome: 'Pistola', pos: 'PIV' },
-      { n: 11, nome: 'Xavier', pos: 'ALA' },
+      { n: 3, nome: 'Zé Arnóbio' }, { n: 7, nome: 'José Adair' },
+      { n: 8, nome: 'Alex' }, { n: 9, nome: 'Ronaldo' },
+      { n: 10, nome: 'Jonathan C.' }, { n: 11, nome: 'Marquinho' },
+      { n: 13, nome: 'Obede' }, { n: 22, nome: 'Gabriel/Bolsonaro' },
+      { n: 89, nome: 'Reinaldo' },
     ],
   },
   {
@@ -79,10 +80,11 @@ const SELECOES = [
     confirmada: true,
     historia: 'Os lusitanos do baba. Todo mundo se acha o Cristiano Ronaldo na hora de bater falta — o fôlego é que às vezes só dura o primeiro tempo.',
     elenco: [
-      { n: 1, nome: 'Gordinho', pos: 'GOL' }, { n: 3, nome: 'Naldo', pos: 'FIX' },
-      { n: 5, nome: 'Peixe', pos: 'ALA' }, { n: 7, nome: 'Sivi', pos: 'ALA' },
-      { n: 9, nome: 'Tico', pos: 'PIV' }, { n: 10, nome: 'Marreta', pos: 'PIV' },
-      { n: 11, nome: 'Juninho', pos: 'ALA' },
+      { n: 1, nome: 'Gildevan', pos: 'GOL' }, { n: 5, nome: 'Diogo' },
+      { n: 7, nome: 'Rogério' }, { n: 10, nome: 'Yuri' },
+      { n: 11, nome: 'Neguinho' }, { n: 12, nome: 'Gilvan' },
+      { n: 14, nome: 'Johnisson' }, { n: 18, nome: 'Pacas' },
+      { n: 77, nome: 'Valdir Andrade' }, { n: 80, nome: 'Aelton' },
     ],
   },
 ];
@@ -93,29 +95,29 @@ const SELECOES = [
 const JOGOS = [
   // Rodízio (todos contra todos, 1 folga por rodada). Placares em branco:
   // o admin lança pelo painel e o app atualiza sozinho.
-  // RODADA 1 — 30/08 — ABERTURA: Brasil × Noruega! (folga: Portugal)
-  { id: 1, rodada: 1, fase: 'Pontos Corridos', data: '2026-08-30T09:00:00-03:00', casa: 'brasil', fora: 'noruega', placar: null },
-  { id: 2, rodada: 1, fase: 'Pontos Corridos', data: '2026-08-30T10:00:00-03:00', casa: 'franca', fora: 'uruguai', placar: null },
+  // RODADA 1 — 30/08 — ABERTURA: Brasil × França! (folga: Noruega)
+  { id: 1, rodada: 1, fase: 'Pontos Corridos', data: '2026-08-30T09:00:00-03:00', casa: 'brasil', fora: 'franca', placar: null },
+  { id: 2, rodada: 1, fase: 'Pontos Corridos', data: '2026-08-30T10:00:00-03:00', casa: 'portugal', fora: 'argentina', placar: null },
 
-  // RODADA 2 — 06/09 — folga: Uruguai
-  { id: 3, rodada: 2, fase: 'Pontos Corridos', data: '2026-09-06T09:00:00-03:00', casa: 'brasil', fora: 'franca', placar: null },
-  { id: 4, rodada: 2, fase: 'Pontos Corridos', data: '2026-09-06T10:00:00-03:00', casa: 'noruega', fora: 'portugal', placar: null },
+  // RODADA 2 — 06/09 — folga: França
+  { id: 3, rodada: 2, fase: 'Pontos Corridos', data: '2026-09-06T09:00:00-03:00', casa: 'noruega', fora: 'portugal', placar: null },
+  { id: 4, rodada: 2, fase: 'Pontos Corridos', data: '2026-09-06T10:00:00-03:00', casa: 'argentina', fora: 'brasil', placar: null },
 
-  // RODADA 3 — 13/09 — folga: Noruega
-  { id: 5, rodada: 3, fase: 'Pontos Corridos', data: '2026-09-13T09:00:00-03:00', casa: 'brasil', fora: 'uruguai', placar: null },
-  { id: 6, rodada: 3, fase: 'Pontos Corridos', data: '2026-09-13T10:00:00-03:00', casa: 'franca', fora: 'portugal', placar: null },
+  // RODADA 3 — 13/09 — folga: Portugal
+  { id: 5, rodada: 3, fase: 'Pontos Corridos', data: '2026-09-13T09:00:00-03:00', casa: 'franca', fora: 'argentina', placar: null },
+  { id: 6, rodada: 3, fase: 'Pontos Corridos', data: '2026-09-13T10:00:00-03:00', casa: 'brasil', fora: 'noruega', placar: null },
 
-  // RODADA 4 — 20/09 — folga: França
-  { id: 7, rodada: 4, fase: 'Pontos Corridos', data: '2026-09-20T09:00:00-03:00', casa: 'brasil', fora: 'portugal', placar: null },
-  { id: 8, rodada: 4, fase: 'Pontos Corridos', data: '2026-09-20T10:00:00-03:00', casa: 'noruega', fora: 'uruguai', placar: null },
+  // RODADA 4 — 20/09 — folga: Argentina
+  { id: 7, rodada: 4, fase: 'Pontos Corridos', data: '2026-09-20T09:00:00-03:00', casa: 'portugal', fora: 'brasil', placar: null },
+  { id: 8, rodada: 4, fase: 'Pontos Corridos', data: '2026-09-20T10:00:00-03:00', casa: 'noruega', fora: 'franca', placar: null },
 
   // RODADA 5 — 27/09 — folga: Brasil
-  { id: 9, rodada: 5, fase: 'Pontos Corridos', data: '2026-09-27T09:00:00-03:00', casa: 'noruega', fora: 'franca', placar: null },
-  { id: 10, rodada: 5, fase: 'Pontos Corridos', data: '2026-09-27T10:00:00-03:00', casa: 'uruguai', fora: 'portugal', placar: null },
+  { id: 9, rodada: 5, fase: 'Pontos Corridos', data: '2026-09-27T09:00:00-03:00', casa: 'argentina', fora: 'noruega', placar: null },
+  { id: 10, rodada: 5, fase: 'Pontos Corridos', data: '2026-09-27T10:00:00-03:00', casa: 'franca', fora: 'portugal', placar: null },
 
-  // FINAIS — 11/10
-  { id: 11, rodada: 6, fase: 'Disputa 3º lugar', data: '2026-10-11T09:30:00-03:00', casa: null, fora: null, placar: null, desc: '3º colocado × 4º colocado' },
-  { id: 12, rodada: 6, fase: 'GRANDE FINAL', data: '2026-10-11T11:00:00-03:00', casa: null, fora: null, placar: null, desc: '1º colocado × 2º colocado' },
+  // FASE FINAL — 04/10
+  { id: 11, rodada: 6, fase: 'Disputa 3º lugar', data: '2026-10-04T09:30:00-03:00', casa: null, fora: null, placar: null, desc: '3º colocado × 4º colocado' },
+  { id: 12, rodada: 6, fase: 'GRANDE FINAL', data: '2026-10-04T11:00:00-03:00', casa: null, fora: null, placar: null, desc: '1º colocado × 2º colocado' },
 ];
 
 // --- Fotos por jogo (venda com cadeado) ------------------------
