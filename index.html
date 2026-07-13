@@ -10,14 +10,32 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260712a">
+  <link rel="stylesheet" href="css/style.css?v=20260712b">
+  <script>
+    // Captura o evento de instalação cedo (antes de disparar) e registra o app offline
+    window.__promptInstalar = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      window.__promptInstalar = e;
+      window.dispatchEvent(new Event('pwa-instalavel'));
+    });
+    window.addEventListener('appinstalled', () => {
+      window.__promptInstalar = null;
+      localStorage.setItem('pwa-instalado', '1');
+      const b = document.getElementById('install-banner');
+      if (b) b.classList.remove('aberto');
+    });
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
 </head>
 <body>
   <div class="app">
 
     <!-- Topo -->
     <header class="topo">
-      <img class="escudo" src="assets/logo-copa.png?v=20260712a" alt="II Copa Baba dos Coroas"
+      <img class="escudo" src="assets/logo-copa.png?v=20260712b" alt="II Copa Baba dos Coroas"
            onerror="this.outerHTML='<div class=&quot;escudo&quot;>👑</div>'">
       <div class="titulos">
         <div class="assoc">Associação Baba dos Coroas</div>
@@ -130,6 +148,7 @@
 
     <!-- ===================== FOTOS ===================== -->
     <section class="secao" id="secao-fotos">
+      <button class="voltar" onclick="irPara('mais')">← Voltar ao Mais</button>
       <h2 class="titulo-secao">Fotos dos <span class="destaque">jogos</span> 📸</h2>
       <p class="subtitulo">Reviva os melhores momentos de cada partida.</p>
 
@@ -144,6 +163,7 @@
 
     <!-- ===================== NOSSOS PATROCINADORES ===================== -->
     <section class="secao" id="secao-patro">
+      <button class="voltar" onclick="irPara('mais')">← Voltar ao Mais</button>
       <h2 class="titulo-secao">Nossos <span class="destaque">patrocinadores</span> 🤝</h2>
       <p class="subtitulo">Quem faz a II Copa Baba dos Coroas acontecer. Valorize quem apoia o nosso baba!</p>
 
@@ -162,6 +182,12 @@
 
     <!-- ===================== MAIS ===================== -->
     <section class="secao" id="secao-mais">
+      <h2 class="titulo-secao">Mais da <span class="destaque">Copa</span></h2>
+      <div class="hub-mais">
+        <button class="hub-item" onclick="irPara('fotos')"><span class="hub-ico">📸</span><span><b>Fotos dos jogos</b><small>Reviva e compre as fotos</small></span><span class="hub-seta">→</span></button>
+        <button class="hub-item" onclick="irPara('patro')"><span class="hub-ico">🤝</span><span><b>Patrocinadores</b><small>Quem apoia o nosso baba</small></span><span class="hub-seta">→</span></button>
+      </div>
+
       <h2 class="titulo-secao">Vídeos da <span class="destaque">Copa</span> 🎬</h2>
       <div id="lista-videos"></div>
 
@@ -190,20 +216,71 @@
     <button data-secao="jogos"><span class="ico">🏆</span>Jogos</button>
     <button data-secao="selecoes"><span class="ico">🌎</span>Seleções</button>
     <button data-secao="album"><span class="ico">🎴</span>Álbum</button>
-    <button data-secao="fotos"><span class="ico">📸</span>Fotos</button>
-    <button data-secao="patro"><span class="ico">🤝</span>Patrocinadores</button>
     <button data-secao="mais"><span class="ico">➕</span>Mais</button>
   </nav>
 
   <!-- Modal de ampliação de foto -->
   <div class="modal-foto" id="modal-foto" onclick="fecharFoto()"></div>
 
+  <!-- Banner de instalação (aparece acima do menu) -->
+  <div class="install-banner" id="install-banner">
+    <img src="assets/logo-copa.png" alt="" class="ib-logo">
+    <div class="ib-txt"><b>Instale o app da II Copa!</b><small id="ib-sub">Acesse mais rápido pela tela inicial</small></div>
+    <button class="ib-instalar" id="btn-instalar">Instalar</button>
+    <button class="ib-fechar" id="btn-fechar-install" aria-label="Fechar">✕</button>
+  </div>
+
+  <!-- Tutorial de boas-vindas (primeira visita) -->
+  <div class="onboarding" id="onboarding">
+    <div class="ob-card">
+      <div class="ob-slide ativa" data-slide="0">
+        <div class="ob-emoji">👑⚽</div>
+        <h2>Bem-vindo à<br><span class="ouro">II Copa Baba dos Coroas</span></h2>
+        <p>O app oficial do torneio! Aqui você acompanha tudo e ainda se diverte.</p>
+      </div>
+      <div class="ob-slide" data-slide="1">
+        <div class="ob-emoji">🏆</div>
+        <h2>Jogos & <span class="ouro">Tabela</span></h2>
+        <p>Veja as rodadas, a classificação, artilharia, assistências e cartões — tudo atualizado.</p>
+      </div>
+      <div class="ob-slide" data-slide="2">
+        <div class="ob-emoji">🎴</div>
+        <h2>Álbum de <span class="ouro">figurinhas</span></h2>
+        <p>Colecione as figurinhas dos jogadores! Você ganha <b>um pacotinho grátis por dia</b>.</p>
+      </div>
+      <div class="ob-slide" data-slide="3">
+        <div class="ob-emoji">🎯</div>
+        <h2>Bolão da <span class="ouro">Copa</span></h2>
+        <p>Dê seus palpites nos jogos, marque pontos e dispute o ranking com a galera!</p>
+      </div>
+      <div class="ob-dots" id="ob-dots"></div>
+      <div class="ob-botoes">
+        <button class="ob-pular" id="ob-pular">Pular</button>
+        <button class="ob-proximo" id="ob-proximo">Próximo →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instruções de instalação no iPhone -->
+  <div class="modal-foto" id="modal-ios" onclick="this.classList.remove('aberto')">
+    <div class="modal-conteudo" onclick="event.stopPropagation()" style="text-align:center">
+      <div style="font-size:40px">📲</div>
+      <h3 style="margin:8px 0">Instalar no iPhone</h3>
+      <p style="font-size:14px; line-height:1.7; color:var(--texto-2)">
+        1. Toque no botão <b>Compartilhar</b> <span style="color:var(--ouro-claro)">⎋</span> (embaixo, no Safari)<br>
+        2. Escolha <b>"Adicionar à Tela de Início"</b><br>
+        3. Toque em <b>Adicionar</b> ✅
+      </p>
+      <button class="btn-fechar" onclick="document.getElementById('modal-ios').classList.remove('aberto')">Entendi</button>
+    </div>
+  </div>
+
   <!-- Confete de celebração (biblioteca canvas-confetti) -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
   <!-- Supabase (dados ao vivo + bolão geral) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="js/data.js?v=20260712a"></script>
-  <script src="js/supabase.js?v=20260712a"></script>
-  <script src="js/app.js?v=20260712a"></script>
+  <script src="js/data.js?v=20260712b"></script>
+  <script src="js/supabase.js?v=20260712b"></script>
+  <script src="js/app.js?v=20260712b"></script>
 </body>
 </html>

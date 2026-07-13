@@ -19,10 +19,13 @@ const fmtData = (iso) => {
 const fmtHora = (iso) => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
 // ---------- Navegação entre seções ----------
+// Seções que têm botão próprio no menu; as demais (fotos, patro) destacam "Mais"
+const NAV_SECOES = ['inicio', 'jogos', 'selecoes', 'album', 'mais'];
 function irPara(secao) {
   $$('.secao').forEach((s) => s.classList.remove('ativa'));
   $(`#secao-${secao}`).classList.add('ativa');
-  $$('.nav-inferior button').forEach((b) => b.classList.toggle('ativa', b.dataset.secao === secao));
+  const navAlvo = NAV_SECOES.includes(secao) ? secao : 'mais';
+  $$('.nav-inferior button').forEach((b) => b.classList.toggle('ativa', b.dataset.secao === navAlvo));
   window.scrollTo({ top: 0 });
 }
 
@@ -678,8 +681,70 @@ function renderHome() {
     </div>` : '');
 }
 
+// ---------- "Cara de app": tutorial + instalar ----------
+const estaInstalado = () =>
+  window.matchMedia('(display-mode: standalone)').matches ||
+  window.navigator.standalone === true ||
+  localStorage.getItem('pwa-instalado') === '1';
+const ehIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+// Tutorial de boas-vindas (só na 1ª visita)
+function iniciarOnboarding() {
+  const ob = $('#onboarding');
+  if (!ob || localStorage.getItem('onboarding-visto')) { mostrarBannerInstalar(); return; }
+
+  const slides = [...ob.querySelectorAll('.ob-slide')];
+  const dots = $('#ob-dots');
+  dots.innerHTML = slides.map((_, i) => `<span class="ob-dot ${i === 0 ? 'on' : ''}"></span>`).join('');
+  let i = 0;
+
+  const mostra = (n) => {
+    slides.forEach((s, k) => s.classList.toggle('ativa', k === n));
+    dots.querySelectorAll('.ob-dot').forEach((d, k) => d.classList.toggle('on', k === n));
+    $('#ob-proximo').textContent = n === slides.length - 1 ? 'Começar 🎉' : 'Próximo →';
+  };
+  const fechar = () => {
+    localStorage.setItem('onboarding-visto', '1');
+    ob.classList.remove('aberto');
+    mostrarBannerInstalar();
+  };
+
+  $('#ob-proximo').onclick = () => { i < slides.length - 1 ? mostra(++i) : fechar(); };
+  $('#ob-pular').onclick = fechar;
+
+  ob.classList.add('aberto');
+}
+
+// Banner "Instalar app" (Android usa o prompt nativo; iPhone mostra instruções)
+function mostrarBannerInstalar() {
+  const banner = $('#install-banner');
+  if (!banner || estaInstalado() || localStorage.getItem('install-dispensado')) return;
+
+  const abrir = () => banner.classList.add('aberto');
+
+  if (window.__promptInstalar) abrir();
+  else if (ehIOS()) { $('#ib-sub').textContent = 'Toque para ver como instalar'; abrir(); }
+  else window.addEventListener('pwa-instalavel', abrir, { once: true });
+
+  $('#btn-instalar').onclick = async () => {
+    if (window.__promptInstalar) {
+      window.__promptInstalar.prompt();
+      await window.__promptInstalar.userChoice;
+      window.__promptInstalar = null;
+      banner.classList.remove('aberto');
+    } else if (ehIOS()) {
+      $('#modal-ios').classList.add('aberto');
+    }
+  };
+  $('#btn-fechar-install').onclick = () => {
+    banner.classList.remove('aberto');
+    localStorage.setItem('install-dispensado', '1');
+  };
+}
+
 // ---------- Inicialização ----------
 document.addEventListener('DOMContentLoaded', () => {
+  iniciarOnboarding();
   $$('.nav-inferior button').forEach((b) => b.addEventListener('click', () => irPara(b.dataset.secao)));
 
   $$('.abas button').forEach((b) => b.addEventListener('click', () => {
