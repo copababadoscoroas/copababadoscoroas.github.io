@@ -27,8 +27,9 @@
   background: linear-gradient(135deg, #0d2038, #091628);
   border: 1px solid #d9a62b; border-radius: 16px; padding: 10px 12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: transform 0.4s ease; opacity: 0;
+  pointer-events: none; /* escondido não pode roubar o toque do menu de baixo */
 }
-.install-banner.aberto { transform: translateX(-50%) translateY(0); opacity: 1; }
+.install-banner.aberto { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
 .install-banner .ib-logo { width: 38px; height: 38px; object-fit: contain; flex-shrink: 0; }
 .install-banner .ib-txt { line-height: 1.2; flex: 1; min-width: 0; }
 .install-banner .ib-txt b { font-size: 13px; color: #fff; }

@@ -5,6 +5,21 @@
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
+// ---------- RESET DE LANÇAMENTO ----------
+// Bump esta versão para zerar o progresso de TODO MUNDO que já testou
+// (álbum, palpites, tutorial). Cada aparelho, ao abrir com uma versão nova,
+// limpa os dados locais uma vez e começa do zero.
+const DADOS_VERSAO = '2026-lancamento';
+(function resetLancamento() {
+  try {
+    if (localStorage.getItem('dados-versao') === DADOS_VERSAO) return;
+    ['album-copa', 'album-ultimo-pacote', 'bolao-palpites', 'bolao-nome',
+     'resultados-vistos', 'onboarding-visto', 'install-dispensado']
+      .forEach((k) => localStorage.removeItem(k));
+    localStorage.setItem('dados-versao', DADOS_VERSAO);
+  } catch (e) { /* localStorage indisponível: segue normal */ }
+})();
+
 // Protege textos digitados pelos usuários (nomes do bolão etc.)
 const escapaHtml = (t) => String(t).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
@@ -744,8 +759,11 @@ function mostrarBannerInstalar() {
 
 // ---------- Inicialização ----------
 document.addEventListener('DOMContentLoaded', () => {
-  iniciarOnboarding();
+  // Menu de baixo PRIMEIRO — garante que a navegação sempre funcione,
+  // mesmo que algo abaixo dê erro.
   $$('.nav-inferior button').forEach((b) => b.addEventListener('click', () => irPara(b.dataset.secao)));
+
+  try { iniciarOnboarding(); } catch (e) { mostrarBannerInstalar(); }
 
   $$('.abas button').forEach((b) => b.addEventListener('click', () => {
     const grupoAbas = b.closest('.abas');
