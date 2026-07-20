@@ -52,7 +52,45 @@ async function carregarAoVivo() {
   }
 }
 
-// Envia os palpites deste aparelho para o bolão geral
+// ---------- Bolão PAGO por jogo ----------
+// Busca todos os palpites (com status de pagamento) para montar
+// prêmios, acumulado e ranking.
+async function buscarPalpites() {
+  if (!supa) return null;
+  try {
+    const { data, error } = await supa
+      .from('copa_palpites')
+      .select('id, device_id, nome, whatsapp, jogo_id, palpite_casa, palpite_fora, pago, created_at')
+      .order('created_at', { ascending: true });
+    if (error) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+// Registra UM palpite (sempre não pago; só o admin confirma o pagamento)
+async function enviarPalpiteJogo(jogoId, palpite, nome, whatsapp) {
+  if (!supa) return false;
+  const jogo = JOGOS.find((j) => j.id === jogoId);
+  if (!jogo || jogo.placar || new Date(jogo.data) <= new Date()) return false;
+  try {
+    const { error } = await supa.from('copa_palpites').insert([{
+      device_id: deviceId(),
+      nome: nome || 'Palpiteiro',
+      whatsapp: whatsapp || null,
+      jogo_id: jogoId,
+      palpite_casa: palpite[0],
+      palpite_fora: palpite[1],
+      pago: false,
+    }]);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+// (antigo) Envia os palpites deste aparelho para o bolão geral
 async function enviarPalpitesNuvem(palpites, nome) {
   if (!supa) return false;
   const linhas = Object.entries(palpites)

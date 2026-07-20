@@ -86,6 +86,10 @@
       <p class="subtitulo">Preencha o placar, os gols e os cartões. Ao salvar, o app de todo mundo atualiza na hora.</p>
       <div id="lista-jogos-admin"></div>
 
+      <h2 class="titulo-secao">Bolão — <span class="destaque">confirmar pagamentos</span> 💰</h2>
+      <p class="subtitulo">Recebeu o Pix? Marque "Pago". Só os palpites pagos entram no prêmio.</p>
+      <div id="lista-bolao-admin"></div>
+
       <h2 class="titulo-secao">Liberar <span class="destaque">fotos compradas</span> 🔓</h2>
       <p class="subtitulo">Recebeu o Pix? Marque a foto e salve — ela abre no app do comprador (e de todos).</p>
       <div id="lista-fotos-admin"></div>
@@ -101,8 +105,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="js/data.js?v=20260713b"></script>
-  <script src="js/supabase.js?v=20260713b"></script>
+  <script src="js/data.js?v=20260720a"></script>
+  <script src="js/supabase.js?v=20260720a"></script>
   <script>
     const $ = (s) => document.querySelector(s);
     const time = (id) => SELECOES.find((s) => s.id === id);
@@ -139,6 +143,7 @@
       $('#tela-admin').style.display = 'block';
       await carregarResultados();
       renderJogosAdmin();
+      await renderBolaoAdmin();
       await renderFotosAdmin();
     }
 
@@ -303,6 +308,78 @@
     }
 
     // ---------- Fotos ----------
+    // ---------- Bolão: confirmar pagamentos ----------
+    const real = (v) => 'R$ ' + Number(v).toFixed(2).replace('.', ',');
+    let PALPITES_ADMIN = [];
+
+    async function renderBolaoAdmin() {
+      const { data, error } = await supa.from('copa_palpites')
+        .select('id, nome, whatsapp, jogo_id, palpite_casa, palpite_fora, pago, created_at')
+        .order('created_at', { ascending: false });
+      PALPITES_ADMIN = data || [];
+
+      if (error) {
+        $('#lista-bolao-admin').innerHTML =
+          '<div class="msg erro" style="display:block">Não consegui carregar os palpites. Já rodou o <b>supabase-bolao-pago.sql</b> no Supabase?</div>';
+        return;
+      }
+      if (!PALPITES_ADMIN.length) {
+        $('#lista-bolao-admin').innerHTML = '<p class="vazio">Nenhum palpite ainda.</p>';
+        return;
+      }
+
+      const porJogo = {};
+      PALPITES_ADMIN.forEach((p) => { (porJogo[p.jogo_id] = porJogo[p.jogo_id] || []).push(p); });
+
+      const blocos = Object.entries(porJogo).map(([jid, lista]) => {
+        const j = JOGOS.find((x) => x.id === Number(jid));
+        const casa = j ? time(j.casa) : null, fora = j ? time(j.fora) : null;
+        const titulo = j && casa && fora ? `${casa.bandeira} ${casa.nome} × ${fora.nome} ${fora.bandeira}` : `Jogo ${jid}`;
+        const pagos = lista.filter((p) => p.pago).length;
+        return `
+          <div class="card">
+            <span class="chip">${titulo}</span>
+            <p class="subtitulo" style="margin:8px 0">
+              ${pagos} de ${lista.length} pago${pagos === 1 ? '' : 's'} · arrecadado: <b>${real(pagos * (COPA.bolaoValor || 5))}</b>
+            </p>
+            ${lista.map((p) => `
+              <label class="check-foto">
+                <input type="checkbox" data-palpite="${p.id}" ${p.pago ? 'checked' : ''}>
+                <span>
+                  <b>${(p.nome || '').replace(/</g, '&lt;')}</b> — palpite <b>${p.palpite_casa}×${p.palpite_fora}</b>
+                  ${p.whatsapp ? `<br><a href="https://wa.me/55${String(p.whatsapp).replace(/\\D/g, '')}" target="_blank" style="color:var(--ouro-claro); font-size:11px">💬 ${p.whatsapp}</a>` : ''}
+                </span>
+              </label>`).join('')}
+          </div>`;
+      }).join('');
+
+      $('#lista-bolao-admin').innerHTML = blocos + `
+        <button class="btn-salvar" onclick="salvarPagamentos()">💾 Salvar pagamentos</button>
+        <div class="msg" id="msg-bolao"></div>`;
+    }
+
+    async function salvarPagamentos() {
+      const msg = $('#msg-bolao');
+      const marcados = new Set(
+        [...document.querySelectorAll('#lista-bolao-admin input[type="checkbox"]:checked')]
+          .map((c) => Number(c.dataset.palpite))
+      );
+      const mudar = PALPITES_ADMIN.filter((p) => p.pago !== marcados.has(p.id));
+      if (!mudar.length) { msg.className = 'msg ok'; msg.textContent = 'Nada mudou.'; return; }
+
+      let erro = null;
+      for (const p of mudar) {
+        const { error } = await supa.from('copa_palpites')
+          .update({ pago: marcados.has(p.id) }).eq('id', p.id);
+        erro = erro || error;
+      }
+      if (erro) { msg.className = 'msg erro'; msg.textContent = 'Erro ao salvar: ' + erro.message; return; }
+      await renderBolaoAdmin();
+      const novo = $('#msg-bolao');
+      novo.className = 'msg ok';
+      novo.textContent = `✅ ${mudar.length} pagamento(s) atualizado(s)!`;
+    }
+
     let FOTOS_LIBERADAS = new Set();
 
     async function renderFotosAdmin() {

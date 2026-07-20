@@ -401,6 +401,67 @@ function lerPalpites() {
   catch { return {}; }
 }
 
+// ---------- Bolão PAGO por jogo ----------
+// R$ 5 por palpite. Quem acerta o PLACAR EXATO leva o bolo do jogo
+// (dividido se houver mais de um). Ninguém acertou → ACUMULA pro próximo.
+// O app não movimenta dinheiro: o Pix vai direto pra Associação e o
+// admin confirma cada pagamento no painel.
+let PALPITES = []; // cache do que veio do servidor
+
+const fmtReal = (v) => 'R$ ' + Number(v).toFixed(2).replace('.', ',');
+
+async function carregarPalpites() {
+  const dados = await buscarPalpites();
+  if (dados) PALPITES = dados;
+  return dados !== null;
+}
+
+// Um palpite por aparelho/jogo: vale o pago; senão, o mais recente
+function palpitesValidos() {
+  const mapa = {};
+  PALPITES.forEach((p) => {
+    const chave = `${p.device_id}|${p.jogo_id}`;
+    const atual = mapa[chave];
+    if (!atual || p.pago || !atual.pago) mapa[chave] = p;
+  });
+  return Object.values(mapa);
+}
+
+const meuPalpiteDoJogo = (jogoId) =>
+  palpitesValidos().find((p) => p.jogo_id === jogoId && p.device_id === deviceId());
+
+// Prêmio de cada jogo + acumulado (só palpites PAGOS valem)
+function calcularPremios() {
+  const pagos = palpitesValidos().filter((p) => p.pago);
+  const jogos = JOGOS.filter((j) => j.casa && j.fora)
+    .slice().sort((a, b) => new Date(a.data) - new Date(b.data));
+
+  const info = {};
+  let acumulado = 0;
+  let jaMarcouPendente = false;
+
+  jogos.forEach((j) => {
+    const doJogo = pagos.filter((p) => p.jogo_id === j.id);
+    const arrecadado = doJogo.length * COPA.bolaoValor;
+
+    if (j.placar) {
+      const bolo = arrecadado + acumulado;
+      const vencedores = doJogo.filter(
+        (p) => p.palpite_casa === j.placar[0] && p.palpite_fora === j.placar[1]
+      );
+      info[j.id] = { pagantes: doJogo.length, entra: acumulado, bolo, vencedores, decidido: true };
+      acumulado = vencedores.length ? 0 : bolo;
+    } else {
+      // o acumulado entra só no próximo jogo a ser disputado
+      const entra = jaMarcouPendente ? 0 : acumulado;
+      jaMarcouPendente = true;
+      info[j.id] = { pagantes: doJogo.length, entra, bolo: arrecadado + entra, vencedores: [], decidido: false };
+    }
+  });
+
+  return { info, acumulado };
+}
+
 function pontosDoPalpite(jogo, palpite) {
   if (!jogo.placar || !palpite) return null;
   const [ra, rf] = jogo.placar;
@@ -411,152 +472,160 @@ function pontosDoPalpite(jogo, palpite) {
 }
 
 function renderBolao() {
-  const palpites = lerPalpites();
   const nome = localStorage.getItem('bolao-nome') || '';
+  const zap = localStorage.getItem('bolao-whats') || '';
+  const { info, acumulado } = calcularPremios();
 
-  // Só entram no bolão jogos entre seleções já confirmadas (ambas sorteadas)
   const confirmado = (id) => { const t = timePorId(id); return t && t.confirmada; };
-  const abertos = JOGOS.filter((j) => !j.placar && j.casa && j.fora
-    && confirmado(j.casa) && confirmado(j.fora) && new Date(j.data) > new Date());
-  const encerrados = JOGOS.filter((j) => j.placar && palpites[j.id]);
-  const total = encerrados.reduce((acc, j) => acc + pontosDoPalpite(j, palpites[j.id]), 0);
+  const abertos = JOGOS
+    .filter((j) => !j.placar && j.casa && j.fora && confirmado(j.casa) && confirmado(j.fora)
+      && new Date(j.data) > new Date())
+    .sort((a, b) => new Date(a.data) - new Date(b.data));
+  const encerrados = JOGOS
+    .filter((j) => j.placar && j.casa && j.fora)
+    .sort((a, b) => new Date(b.data) - new Date(a.data));
 
-  const linhaPalpite = (j) => {
-    const casa = timePorId(j.casa);
-    const fora = timePorId(j.fora);
-    const p = palpites[j.id] || ['', ''];
+  const cabecalhoJogo = (j, inf) => {
+    const casa = timePorId(j.casa), fora = timePorId(j.fora);
     return `
-      <div class="palpite-jogo" data-jogo="${j.id}">
-        <span class="time">${casa.bandeira}<br>${casa.nome}</span>
-        <input type="number" min="0" max="30" inputmode="numeric" value="${p[0]}" aria-label="Gols ${casa.nome}">
-        <span class="x">×</span>
-        <input type="number" min="0" max="30" inputmode="numeric" value="${p[1]}" aria-label="Gols ${fora.nome}">
-        <span class="time">${fora.bandeira}<br>${fora.nome}</span>
+      <div class="bolao-topo">
+        <span class="bolao-jogo">${casa.bandeira} ${casa.nome} <span class="x">×</span> ${fora.nome} ${fora.bandeira}</span>
+        <span class="bolao-data">${fmtData(j.data)} · ${fmtHora(j.data)}</span>
+      </div>
+      <div class="bolao-premio">
+        <span class="premio-valor">${fmtReal(inf.bolo)}</span>
+        <span class="premio-info">${inf.pagantes} palpite${inf.pagantes === 1 ? '' : 's'} pago${inf.pagantes === 1 ? '' : 's'}${inf.entra > 0 ? ` · 🔥 ${fmtReal(inf.entra)} acumulado` : ''}</span>
       </div>`;
   };
 
-  const porRodada = {};
-  abertos.forEach((j) => {
-    (porRodada[`Rodada ${j.rodada}`] = porRodada[`Rodada ${j.rodada}`] || []).push(j);
-  });
+  const cardAberto = (j) => {
+    const casa = timePorId(j.casa), fora = timePorId(j.fora);
+    const inf = info[j.id] || { pagantes: 0, entra: 0, bolo: 0 };
+    const meu = meuPalpiteDoJogo(j.id);
 
-  const historico = encerrados.map((j) => {
-    const casa = timePorId(j.casa);
-    const fora = timePorId(j.fora);
-    const pts = pontosDoPalpite(j, palpites[j.id]);
-    const icone = pts === 3 ? '🎯' : pts === 1 ? '✅' : '❌';
+    if (meu) {
+      return `
+        <div class="card card-bolao">
+          ${cabecalhoJogo(j, inf)}
+          <div class="meu-palpite">Seu palpite: <b>${meu.palpite_casa} × ${meu.palpite_fora}</b></div>
+          ${meu.pago
+            ? '<div class="selo-pago">✅ Pagamento confirmado — boa sorte!</div>'
+            : `<div class="selo-pendente">⏳ Aguardando confirmação do Pix</div>
+               <button class="btn-bolao secundario" onclick="cobrarPix(${j.id})">💬 Ver o Pix / enviar comprovante</button>`}
+        </div>`;
+    }
+
     return `
-      <li>
-        <span class="medalha">${icone}</span>
-        <span class="info"><b>${casa.bandeira} ${j.placar[0]}×${j.placar[1]} ${fora.bandeira}</b><br>
-        <span class="t">seu palpite: ${palpites[j.id][0]}×${palpites[j.id][1]}</span></span>
-        <span class="valor">${pts} pt${pts === 1 ? '' : 's'}</span>
-      </li>`;
-  }).join('');
+      <div class="card card-bolao">
+        ${cabecalhoJogo(j, inf)}
+        <div class="palpite-jogo" data-jogo="${j.id}">
+          <span class="time">${casa.bandeira}<br>${casa.nome}</span>
+          <input type="number" min="0" max="30" inputmode="numeric" aria-label="Gols ${casa.nome}">
+          <span class="x">×</span>
+          <input type="number" min="0" max="30" inputmode="numeric" aria-label="Gols ${fora.nome}">
+          <span class="time">${fora.bandeira}<br>${fora.nome}</span>
+        </div>
+        <button class="btn-bolao" onclick="palpitarJogo(${j.id})">🎯 Palpitar · ${fmtReal(COPA.bolaoValor)}</button>
+      </div>`;
+  };
+
+  const cardEncerrado = (j) => {
+    const casa = timePorId(j.casa), fora = timePorId(j.fora);
+    const inf = info[j.id] || { pagantes: 0, bolo: 0, vencedores: [] };
+    const venc = inf.vencedores || [];
+    const meu = meuPalpiteDoJogo(j.id);
+    const cada = venc.length ? inf.bolo / venc.length : 0;
+    const euGanhei = meu && meu.pago && venc.some((v) => v.device_id === deviceId());
+    return `
+      <div class="card card-bolao">
+        <div class="bolao-topo">
+          <span class="bolao-jogo">${casa.bandeira} ${j.placar[0]} <span class="x">×</span> ${j.placar[1]} ${fora.bandeira}</span>
+          <span class="bolao-data">${fmtData(j.data)}</span>
+        </div>
+        ${venc.length
+          ? `<p class="bolao-resultado">🏆 ${venc.length === 1 ? 'Ganhador' : 'Ganhadores'}:
+             <b>${venc.map((v) => escapaHtml(v.nome)).join(', ')}</b><br>
+             <span class="premio-valor">${fmtReal(cada)}</span>${venc.length > 1 ? ' para cada' : ''}</p>`
+          : `<p class="bolao-resultado">😅 Ninguém acertou o placar — <b>${fmtReal(inf.bolo)}</b> acumulou pro próximo jogo!</p>`}
+        ${meu ? `<div class="meu-palpite">Seu palpite: <b>${meu.palpite_casa} × ${meu.palpite_fora}</b>${euGanhei ? ' 🎉 <b>VOCÊ GANHOU!</b>' : ''}</div>` : ''}
+      </div>`;
+  };
 
   $('#conteudo-bolao').innerHTML = `
     <div class="card album-progresso">
-      <span class="chip">🎯 Bolão da Copa</span>
+      <span class="chip">🎯 Bolão · ${fmtReal(COPA.bolaoValor)} por jogo</span>
       <p style="margin-top:10px; font-size:13px; line-height:1.6">
-        Acerte o <b>placar exato</b>: 3 pontos · acerte só o <b>vencedor (ou empate)</b>: 1 ponto.<br>
-        Pode mudar o palpite até a bola rolar!
+        Escolha o jogo, crave o <b>placar exato</b> e pague ${fmtReal(COPA.bolaoValor)} no Pix.
+        Quem acertar <b>leva o bolo</b>! Ninguém acertou? <b>Acumula pro próximo</b> 🔥<br>
+        <span style="color:var(--texto-2)">Todo o valor arrecadado volta em prêmio para os participantes.</span>
       </p>
-      <input class="campo-nome" id="bolao-nome" type="text" maxlength="30"
-             placeholder="Seu nome ou apelido de palpiteiro" value="${escapaHtml(nome)}">
+      ${acumulado > 0 ? `<div class="acumulou">🔥 ACUMULOU! <b>${fmtReal(acumulado)}</b> no próximo jogo</div>` : ''}
+      <input class="campo-nome" id="bolao-nome" type="text" maxlength="30" placeholder="Seu nome" value="${escapaHtml(nome)}">
+      <input class="campo-nome" id="bolao-whats" type="tel" maxlength="20" placeholder="Seu WhatsApp (com DDD)" value="${escapaHtml(zap)}">
     </div>
 
-    <div id="ranking-bolao"></div>
+    ${abertos.length
+      ? abertos.map(cardAberto).join('')
+      : '<p class="vazio">Nenhum jogo aberto para palpite no momento.</p>'}
 
-    ${encerrados.length ? `
-      <div class="card">
-        <span class="chip">Meus pontos: ${total}</span>
-        <ol class="rank-lista" style="margin-top:8px">${historico}</ol>
-        <p class="subtitulo" style="margin:10px 0 0">🏆 O ranking geral entre todos os palpiteiros vem em breve!</p>
-      </div>` : ''}
+    ${encerrados.length
+      ? `<h3 class="rodada-titulo">Resultados do bolão</h3>${encerrados.map(cardEncerrado).join('')}`
+      : ''}
 
-    ${Object.entries(porRodada).map(([rodada, jogos]) => `
-      <h3 class="rodada-titulo">${rodada}</h3>
-      ${jogos.map(linhaPalpite).join('')}
-    `).join('')}
-
-    ${abertos.length ? `
-      <button class="btn-bolao" onclick="salvarPalpites()">💾 Salvar meus palpites</button>
-      <button class="btn-bolao secundario" onclick="compartilharPalpites()">📤 Desafiar a galera no WhatsApp</button>
-    ` : '<p class="vazio">Nenhum jogo aberto para palpites no momento.</p>'}`;
-
-  renderRankingBolao(); // preenche o ranking geral (assíncrono, via Supabase)
+    <button class="btn-bolao secundario" onclick="chamarGaleraBolao()">📤 Chamar a galera no WhatsApp</button>`;
 }
 
-async function renderRankingBolao() {
-  const alvo = $('#ranking-bolao');
-  if (!alvo) return;
-  const ranking = await buscarRankingBolao();
-  if (ranking === null) { alvo.innerHTML = ''; return; } // servidor indisponível: segue no modo local
+async function palpitarJogo(jogoId) {
+  const nome = ($('#bolao-nome').value || '').trim();
+  const zap = ($('#bolao-whats').value || '').trim();
+  if (!nome) { alert('Digite seu nome para palpitar 🙂'); $('#bolao-nome').focus(); return; }
+  if (!zap) { alert('Digite seu WhatsApp — é por ele que a organização confirma seu pagamento.'); $('#bolao-whats').focus(); return; }
 
-  if (!ranking.length) {
-    alvo.innerHTML = `
-      <div class="card">
-        <span class="chip">🏆 Ranking geral</span>
-        <p class="vazio">Ninguém palpitou ainda — seja o primeiro!</p>
-      </div>`;
-    return;
-  }
+  const linha = $(`.palpite-jogo[data-jogo="${jogoId}"]`);
+  const [a, b] = linha.querySelectorAll('input');
+  if (a.value === '' || b.value === '') { alert('Preencha o placar dos dois times ⚽'); return; }
 
-  const medalhas = ['🥇', '🥈', '🥉'];
-  alvo.innerHTML = `
-    <div class="card">
-      <span class="chip">🏆 Ranking geral dos palpiteiros</span>
-      <ol class="rank-lista" style="margin-top:8px">
-        ${ranking.slice(0, 20).map((p, i) => `
-          <li class="${p.souEu ? 'sou-eu' : ''}">
-            <span class="medalha">${medalhas[i] || i + 1}</span>
-            <span class="info"><b>${escapaHtml(p.nome)}${p.souEu ? ' (você)' : ''}</b><br>
-            <span class="t">${p.exatos} exato${p.exatos === 1 ? '' : 's'} · ${p.palpites} palpite${p.palpites === 1 ? '' : 's'}</span></span>
-            <span class="valor">${p.pts} pts</span>
-          </li>`).join('')}
-      </ol>
-    </div>`;
-}
+  localStorage.setItem('bolao-nome', nome);
+  localStorage.setItem('bolao-whats', zap);
 
-function salvarPalpites() {
-  const nome = $('#bolao-nome').value.trim();
-  if (nome) localStorage.setItem('bolao-nome', nome);
+  const palpite = [Number(a.value), Number(b.value)];
+  const ok = await enviarPalpiteJogo(jogoId, palpite, nome, zap);
+  if (!ok) { alert('Não consegui registrar seu palpite. Confira sua internet e tente de novo.'); return; }
 
-  const palpites = lerPalpites();
-  let qtd = 0;
-  $$('#conteudo-bolao .palpite-jogo').forEach((linha) => {
-    const [a, b] = linha.querySelectorAll('input');
-    if (a.value !== '' && b.value !== '') {
-      palpites[linha.dataset.jogo] = [Number(a.value), Number(b.value)];
-      qtd++;
-    }
-  });
-
-  localStorage.setItem('bolao-palpites', JSON.stringify(palpites));
   vibrar(60);
-  if (qtd) festejar(false);
+  festejar(false);
+  await carregarPalpites();
   renderBolao();
-
-  // envia para o bolão geral e atualiza o ranking
-  enviarPalpitesNuvem(palpites, nome).then(() => renderRankingBolao());
+  cobrarPix(jogoId, palpite, nome);
 }
 
-function compartilharPalpites() {
-  const palpites = lerPalpites();
-  const nome = localStorage.getItem('bolao-nome') || 'Palpiteiro misterioso';
-  const linhas = JOGOS
-    .filter((j) => !j.placar && j.casa && palpites[j.id])
-    .map((j) => {
-      const [a, b] = palpites[j.id];
-      const casa = timePorId(j.casa);
-      const fora = timePorId(j.fora);
-      return `${casa.bandeira} ${casa.nome} ${a}×${b} ${fora.nome} ${fora.bandeira}`;
-    });
+// Abre o WhatsApp da organização com o palpite e a instrução do Pix
+function cobrarPix(jogoId, palpite, nome) {
+  const j = JOGOS.find((x) => x.id === jogoId);
+  if (!j) return;
+  const meu = palpite ? null : meuPalpiteDoJogo(jogoId);
+  const pc = palpite ? palpite[0] : (meu ? meu.palpite_casa : '?');
+  const pf = palpite ? palpite[1] : (meu ? meu.palpite_fora : '?');
+  const quem = nome || localStorage.getItem('bolao-nome') || '';
+  const casa = timePorId(j.casa), fora = timePorId(j.fora);
+  const pix = COPA.pixChave
+    ? `\nPix (${COPA.pixNome}): ${COPA.pixChave}`
+    : '\nMe passa a chave Pix, por favor 🙏';
+  const texto = `🎯 *BOLÃO — II Copa Baba dos Coroas*\n`
+    + `Jogo: ${casa.nome} × ${fora.nome} (${fmtData(j.data)} ${fmtHora(j.data)})\n`
+    + `Meu palpite: *${pc} × ${pf}*\n`
+    + `Nome: ${quem}\n`
+    + `Valor: ${fmtReal(COPA.bolaoValor)}${pix}\n\n`
+    + `Já envio o comprovante! ✅`;
+  window.open(`https://wa.me/${COPA.bolaoWhatsapp}?text=${encodeURIComponent(texto)}`, '_blank');
+}
 
-  const texto = linhas.length
-    ? `🎯 Palpites de ${nome} no BOLÃO da II Copa Baba dos Coroas:\n\n${linhas.join('\n')}\n\nDuvida? Faça o seu: https://copababadoscoroas.netlify.app`
-    : `🎯 Bora dar seus palpites no BOLÃO da II Copa Baba dos Coroas!\nhttps://copababadoscoroas.netlify.app`;
-
+function chamarGaleraBolao() {
+  const { acumulado } = calcularPremios();
+  const texto = `🎯 *BOLÃO da II Copa Baba dos Coroas!*\n`
+    + `${fmtReal(COPA.bolaoValor)} por jogo — acertou o placar exato, leva o bolo!`
+    + (acumulado > 0 ? `\n🔥 ACUMULADO: ${fmtReal(acumulado)}` : '')
+    + `\n\nDá o teu palpite: https://emanoel-aleixo.github.io/copa-baba-dos-coroas/`;
   window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
 }
 
@@ -793,17 +862,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Dados ao vivo do Supabase (resultados oficiais + fotos liberadas);
   // se conseguir, redesenha tudo por cima do modo local
-  carregarAoVivo().then((ok) => {
+  Promise.all([carregarAoVivo(), carregarPalpites()]).then(([ok]) => {
     if (ok) {
       renderHome();
       renderJogos();
-      renderBolao();
       renderClassificacao();
       renderRankings();
       renderSelecoes();
       renderAlbum();
       renderFotos();
     }
+    renderBolao(); // sempre redesenha: prêmios/pagamentos vêm do servidor
 
     // Resultado novo desde a última visita? Confete de boas-vindas.
     const jogados = JOGOS.filter((j) => j.placar).length;

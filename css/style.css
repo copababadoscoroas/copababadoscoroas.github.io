@@ -4,6 +4,33 @@
    vermelho-coroa sobre fundo escuro. Mobile-first, cara de app.
    ============================================================ */
 
+/* ---------- Bolão pago por jogo ---------- */
+.card-bolao { padding: 14px; }
+.bolao-topo { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; }
+.bolao-jogo { font-size: 14px; font-weight: 700; }
+.bolao-jogo .x { color: #9aa0b5; margin: 0 2px; }
+.bolao-data { font-size: 11px; color: #9aa0b5; text-transform: capitalize; }
+.bolao-premio {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  background: rgba(217,166,43,0.1); border: 1px solid rgba(217,166,43,0.35);
+  border-radius: 12px; padding: 8px 12px; margin-bottom: 12px;
+}
+.premio-valor { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: #f5c84c; line-height: 1; }
+.premio-info { font-size: 11px; color: #9aa0b5; }
+.meu-palpite { font-size: 14px; margin: 6px 0; }
+.selo-pago, .selo-pendente {
+  display: block; font-size: 12px; font-weight: 700; text-align: center;
+  border-radius: 10px; padding: 8px; margin-top: 8px;
+}
+.selo-pago { background: rgba(46,204,113,0.12); color: #2ecc71; border: 1px solid rgba(46,204,113,0.4); }
+.selo-pendente { background: rgba(241,196,15,0.1); color: #f1c40f; border: 1px solid rgba(241,196,15,0.35); }
+.bolao-resultado { font-size: 13px; line-height: 1.7; }
+.acumulou {
+  margin-top: 12px; text-align: center; font-size: 14px;
+  background: linear-gradient(135deg, #a50044, #d50032); color: #fff;
+  border: 1px solid #d9a62b; border-radius: 12px; padding: 10px;
+}
+
 /* ---------- Hub "Mais" ---------- */
 .hub-mais { display: flex; flex-direction: column; gap: 10px; margin: 14px 0 8px; }
 .hub-item {
