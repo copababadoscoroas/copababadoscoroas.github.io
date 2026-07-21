@@ -355,6 +355,109 @@ function figurinhasRaras() {
   return chaves;
 }
 
+// ---------- Troca de figurinhas ----------
+// O app monta sozinho as listas "TENHO" (repetidas) e "PRECISO" (faltando).
+// A pessoa chama a galera no WhatsApp e, ao fechar negócio, registra a troca:
+// tira 1 da repetida que deu e cola a que recebeu.
+const nomeFig = (f) => `${f.jogador.nome} (${f.selecao.nome})`;
+
+function minhasRepetidas() {
+  const album = lerAlbum();
+  return TODAS_FIGURINHAS
+    .filter((f) => (album[f.fig] || 0) > 1)
+    .map((f) => ({ ...f, sobrando: album[f.fig] - 1 }));
+}
+const minhasFaltando = () => {
+  const album = lerAlbum();
+  return TODAS_FIGURINHAS.filter((f) => !album[f.fig]);
+};
+
+function renderTroca() {
+  const alvo = $('#area-troca');
+  if (!alvo) return;
+  const repetidas = minhasRepetidas();
+  const faltando = minhasFaltando();
+
+  if (!repetidas.length && !faltando.length) { alvo.innerHTML = ''; return; }
+
+  const opcoes = (lista, tipo) => lista.map((f, i) =>
+    `<option value="${f.fig}">${escapaHtml(nomeFig(f))}${tipo === 'dei' ? ` ×${f.sobrando}` : ''}</option>`).join('');
+
+  alvo.innerHTML = `
+    <div class="card card-troca">
+      <span class="chip">🔄 Trocar figurinhas</span>
+      <div class="troca-resumo">
+        <div><b>${repetidas.length}</b><span>repetidas para trocar</span></div>
+        <div><b>${faltando.length}</b><span>faltando no álbum</span></div>
+      </div>
+
+      ${repetidas.length
+        ? `<p class="troca-lista"><b>Você tem repetida:</b> ${repetidas.map((f) => escapaHtml(f.jogador.nome) + (f.sobrando > 1 ? ` ×${f.sobrando}` : '')).join(' · ')}</p>`
+        : '<p class="troca-lista" style="color:var(--texto-2)">Você ainda não tem figurinhas repetidas. Abra os pacotinhos diários!</p>'}
+
+      <button class="btn-bolao secundario" onclick="chamarTroca()">📤 Chamar a galera no WhatsApp</button>
+
+      ${repetidas.length && faltando.length ? `
+        <div class="troca-registrar">
+          <p class="troca-titulo">Fechou a troca? Registre aqui:</p>
+          <label class="troca-campo">
+            <span>Dei a repetida</span>
+            <select id="troca-dei">${opcoes(repetidas, 'dei')}</select>
+          </label>
+          <label class="troca-campo">
+            <span>Recebi</span>
+            <select id="troca-recebi">${opcoes(faltando, 'recebi')}</select>
+          </label>
+          <button class="btn-bolao" onclick="registrarTroca()">🤝 Confirmar troca</button>
+        </div>` : ''}
+    </div>`;
+}
+
+// Monta a mensagem de troca para o WhatsApp
+function chamarTroca() {
+  const repetidas = minhasRepetidas();
+  const faltando = minhasFaltando();
+  const nome = localStorage.getItem('bolao-nome');
+
+  const linhaTenho = repetidas.length
+    ? repetidas.map((f) => nomeFig(f) + (f.sobrando > 1 ? ` (×${f.sobrando})` : '')).join(', ')
+    : 'nenhuma ainda';
+  // limita a lista de faltantes para a mensagem não ficar gigante
+  const faltaTxt = faltando.length
+    ? faltando.slice(0, 12).map(nomeFig).join(', ') + (faltando.length > 12 ? ` … (+${faltando.length - 12})` : '')
+    : 'já completei o álbum! 🏆';
+
+  const texto = `🔄 *TROCA DE FIGURINHAS — II Copa Baba dos Coroas*\n`
+    + (nome ? `De: ${nome}\n` : '')
+    + `\n🎴 *Tenho repetidas:* ${linhaTenho}`
+    + `\n\n🔎 *Preciso:* ${faltaTxt}`
+    + `\n\nQuem tem? Bora trocar! 👑\nMonte o seu álbum: https://emanoel-aleixo.github.io/copa-baba-dos-coroas/`;
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+}
+
+// Efetiva a troca no álbum: -1 na que deu, +1 na que recebeu
+function registrarTroca() {
+  const dei = $('#troca-dei')?.value;
+  const recebi = $('#troca-recebi')?.value;
+  if (!dei || !recebi) return;
+  if (dei === recebi) { alert('Escolha figurinhas diferentes 🙂'); return; }
+
+  const album = lerAlbum();
+  if ((album[dei] || 0) < 2) { alert('Você não tem essa figurinha repetida.'); renderTroca(); return; }
+  if (album[recebi]) { alert('Você já tem essa figurinha no álbum.'); renderTroca(); return; }
+
+  album[dei] -= 1;
+  album[recebi] = 1;
+  salvarAlbum(album);
+
+  const nova = TODAS_FIGURINHAS.find((f) => f.fig === recebi);
+  vibrar([60, 40, 60]);
+  festejar(false);
+  renderAlbum();
+  alert(`🤝 Troca registrada! ${nova ? nomeFig(nova) : 'Figurinha'} colada no seu álbum.`);
+}
+
 function renderAlbum() {
   const album = lerAlbum();
   const comElenco = SELECOES.filter((s) => s.elenco.length);
@@ -372,6 +475,8 @@ function renderAlbum() {
   btn.textContent = total === 0
     ? '⏳ Figurinhas em breve!'
     : (pacoteDisponivel() ? '🎁 Abrir pacotinho do dia (3 figurinhas)' : '⏳ Volte amanhã para outro pacotinho!');
+
+  renderTroca();
 
   const raras = figurinhasRaras();
   $('#album-grades').innerHTML = comElenco.map((s) => `

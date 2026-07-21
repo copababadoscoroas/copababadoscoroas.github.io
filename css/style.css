@@ -25,6 +25,26 @@
 .selo-pago { background: rgba(46,204,113,0.12); color: #2ecc71; border: 1px solid rgba(46,204,113,0.4); }
 .selo-pendente { background: rgba(241,196,15,0.1); color: #f1c40f; border: 1px solid rgba(241,196,15,0.35); }
 .bolao-resultado { font-size: 13px; line-height: 1.7; }
+/* ---------- Troca de figurinhas ---------- */
+.card-troca { margin-top: 4px; }
+.troca-resumo { display: flex; gap: 10px; margin: 12px 0 10px; }
+.troca-resumo > div {
+  flex: 1; text-align: center; background: rgba(255,255,255,.05);
+  border: 1px solid var(--linha); border-radius: 12px; padding: 10px 6px;
+}
+.troca-resumo b { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--ouro-claro); line-height: 1; }
+.troca-resumo span { font-size: 11px; color: var(--texto-2); }
+.troca-lista { font-size: 13px; line-height: 1.6; margin-bottom: 12px; }
+.troca-registrar { border-top: 1px dashed var(--linha); margin-top: 14px; padding-top: 12px; }
+.troca-titulo { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+.troca-campo { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.troca-campo > span { font-size: 12px; color: var(--texto-2); flex: 0 0 74px; }
+.troca-campo select {
+  flex: 1; min-width: 0; background: var(--fundo-2); color: var(--texto);
+  border: 1px solid var(--linha); border-radius: 10px; padding: 10px;
+  font-family: inherit; font-size: 13px;
+}
+
 .card-bolao.em-breve { opacity: .75; }
 .abre-em {
   font-size: 13px; text-align: center; color: #f1c40f;
