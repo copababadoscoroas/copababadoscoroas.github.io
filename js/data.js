@@ -12,15 +12,15 @@ const COPA = {
   tema: 'Edição Copa do Mundo',
   local: 'Canindé de São Francisco/SE',
   inicio: '2026-08-30T09:00:00-03:00',
-  whatsappFotos: '5579999111241',
+  whatsappFotos: '5579998777953',
   precoFoto: 'R$ 5,00',
 
   // --- Bolão pago (por jogo) ---
   // Cada palpite custa R$ 5. Quem acertar o PLACAR EXATO leva o bolo do jogo
   // (dividido se houver mais de um). Se ninguém acertar, ACUMULA pro próximo.
   bolaoValor: 5,
-  bolaoWhatsapp: '5579999111241', // organização recebe os palpites/comprovantes
-  pixChave: '', // ⚠️ PREENCHER: chave Pix do caixa da Associação
+  bolaoWhatsapp: '5579998777953', // organização recebe os palpites/comprovantes
+  pixChave: 'Nascimento_Lueno@hotmail.com', // chave Pix (e-mail) do caixa da Associação
   pixNome: 'Caixa da Associação Baba dos Coroas',
 
   demo: true,
