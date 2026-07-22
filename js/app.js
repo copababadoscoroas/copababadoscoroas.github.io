@@ -857,7 +857,7 @@ function verFoto(gIdx, fIdx) {
         : `<button class="btn-comprar" onclick="comprarFoto('${f.id}', '${galeria.titulo.replace(/'/g, '')}')">
              💬 Comprar por ${COPA.precoFoto} no WhatsApp (Pix)
            </button>
-           <p class="modal-obs">Após o pagamento, você recebe a foto em <b>alta resolução, sem marca d'água e sem borrão</b>.</p>`}
+           <p class="modal-obs">💡 Leve <b>${COPA.precoFotoCombo}</b>! Após o pagamento, você recebe a foto em <b>alta resolução, sem marca d'água e sem borrão</b>.</p>`}
       <button class="btn-fechar" onclick="fecharFoto()">Fechar</button>
     </div>`;
   $('#modal-foto').classList.add('aberto');

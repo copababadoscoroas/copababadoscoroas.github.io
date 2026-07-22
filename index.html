@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260722h">
+  <link rel="stylesheet" href="css/style.css?v=20260722i">
   <script>
     // RESET DE LANÇAMENTO — roda antes de tudo, embutido no HTML (não depende do app.js
     // estar atualizado no cache). Zera figurinhas/álbum/palpites de quem testou antes.
@@ -56,7 +56,7 @@
 
     <!-- Topo -->
     <header class="topo">
-      <img class="escudo" src="assets/logo-copa.png?v=20260722h" alt="II Copa Baba dos Coroas"
+      <img class="escudo" src="assets/logo-copa.png?v=20260722i" alt="II Copa Baba dos Coroas"
            onerror="this.outerHTML='<div class=&quot;escudo&quot;>👑</div>'">
       <div class="titulos">
         <div class="assoc">Associação Baba dos Coroas</div>
@@ -175,6 +175,35 @@
       <h2 class="titulo-secao">Fotos dos <span class="destaque">jogos</span> 📸</h2>
       <p class="subtitulo">Reviva os melhores momentos de cada partida.</p>
 
+      <!-- SERVIÇO 1 · FOTO DIGITAL -->
+      <div class="servico-cabecalho">
+        <span class="sc-num">1</span>
+        <div>
+          <h3>Foto digital 📱</h3>
+          <p>Recebe no celular, em alta resolução, pelo WhatsApp (Pix).</p>
+        </div>
+        <div class="sc-preco"><b>R$ 5</b><small>cada · 3 por R$ 10</small></div>
+      </div>
+
+      <div class="aviso-fotos">
+        🔒 As fotos bloqueadas mostram uma <b>prévia com marca d'água</b>.
+        Toque para ampliar e comprar pelo WhatsApp (Pix) — você recebe a foto
+        <b>em alta resolução, sem marca d'água e sem borrão</b>.
+        <br>💡 <b>Promoção:</b> 1 foto por R$ 5 ou leve <b>3 por R$ 10</b>.
+      </div>
+
+      <div id="galerias-fotos"></div>
+
+      <!-- SERVIÇO 2 · FOTO IMPRESSA -->
+      <div class="servico-cabecalho" style="margin-top:22px">
+        <span class="sc-num">2</span>
+        <div>
+          <h3>Foto impressa na hora 🖨️</h3>
+          <p>Sai na mão, no dia do jogo. Outra modalidade — separada da digital.</p>
+        </div>
+        <div class="sc-preco"><b>R$ 15</b><small>impressa</small></div>
+      </div>
+
       <div class="card-impressa">
         <div class="ci-selo">🖨️ NOVIDADE · NO LOCAL</div>
         <h3>Foto impressa <span class="ouro">na hora</span></h3>
@@ -186,21 +215,14 @@
         <ul class="ci-lista">
           <li>📸 Foto dos jogadores e da torcida</li>
           <li>🖼️ Impressa na hora, acabamento profissional</li>
-          <li>📱 Se preferir, leva também em <b>alta resolução no celular</b></li>
+          <li>💵 <b>R$ 15</b> a foto impressa</li>
+          <li>📱 Quer só no celular? Use a <b>foto digital</b> aqui de cima</li>
         </ul>
         <a class="ci-btn"
            href="https://wa.me/5579998777953?text=Quero%20minha%20foto%20impressa%20na%20hora%20na%20II%20Copa%20Baba%20dos%20Coroas!"
            target="_blank" rel="noopener">💬 Quero minha foto impressa</a>
         <div class="ci-hub">Serviço da <b>HUB Sertão Conecta</b> durante os jogos</div>
       </div>
-
-      <div class="aviso-fotos">
-        🔒 As fotos bloqueadas mostram uma <b>prévia com marca d'água</b>.
-        Toque para ampliar e comprar pelo WhatsApp (Pix) — você recebe a foto
-        <b>em alta resolução, sem marca d'água e sem borrão</b>.
-      </div>
-
-      <div id="galerias-fotos"></div>
     </section>
 
     <!-- ===================== NOSSOS PATROCINADORES ===================== -->
@@ -328,8 +350,8 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
   <!-- Supabase (dados ao vivo + bolão geral) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="js/data.js?v=20260722h"></script>
-  <script src="js/supabase.js?v=20260722h"></script>
-  <script src="js/app.js?v=20260722h"></script>
+  <script src="js/data.js?v=20260722i"></script>
+  <script src="js/supabase.js?v=20260722i"></script>
+  <script src="js/app.js?v=20260722i"></script>
 </body>
 </html>

@@ -14,6 +14,7 @@ const COPA = {
   inicio: '2026-08-30T06:00:00-03:00',
   whatsappFotos: '5579998777953',
   precoFoto: 'R$ 5,00',
+  precoFotoCombo: '3 por R$ 10',
 
   // --- Bolão pago (por jogo) ---
   // Cada palpite custa R$ 5. Quem acertar o PLACAR EXATO leva o bolo do jogo
