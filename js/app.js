@@ -9,7 +9,7 @@ const $$ = (sel) => document.querySelectorAll(sel);
 // Bump esta versão para zerar o progresso de TODO MUNDO que já testou
 // (álbum, palpites, tutorial). Cada aparelho, ao abrir com uma versão nova,
 // limpa os dados locais uma vez e começa do zero.
-const DADOS_VERSAO = '2026-lancamento';
+const DADOS_VERSAO = '2026-lancamento-oficial';
 (function resetLancamento() {
   try {
     if (localStorage.getItem('dados-versao') === DADOS_VERSAO) return;
