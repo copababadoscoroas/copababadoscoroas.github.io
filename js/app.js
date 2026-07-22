@@ -431,7 +431,7 @@ function chamarTroca() {
     + (nome ? `De: ${nome}\n` : '')
     + `\n🎴 *Tenho repetidas:* ${linhaTenho}`
     + `\n\n🔎 *Preciso:* ${faltaTxt}`
-    + `\n\nQuem tem? Bora trocar! 👑\nMonte o seu álbum: https://emanoel-aleixo.github.io/copa-baba-dos-coroas/`;
+    + `\n\nQuem tem? Bora trocar! 👑\nMonte o seu álbum: https://copababadoscoroas.github.io/`;
 
   window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
 }
@@ -788,7 +788,7 @@ function chamarGaleraBolao() {
   const texto = `🎯 *BOLÃO da II Copa Baba dos Coroas!*\n`
     + `${fmtReal(COPA.bolaoValor)} por jogo — acertou o placar exato, leva o bolo!`
     + (acumulado > 0 ? `\n🔥 ACUMULADO: ${fmtReal(acumulado)}` : '')
-    + `\n\nDá o teu palpite: https://emanoel-aleixo.github.io/copa-baba-dos-coroas/`;
+    + `\n\nDá o teu palpite: https://copababadoscoroas.github.io/`;
   window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
 }
 
