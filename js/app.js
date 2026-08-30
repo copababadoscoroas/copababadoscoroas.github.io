@@ -106,7 +106,13 @@ function calculaClassificacao() {
     fora.gp += gf; fora.gc += gc;
     if (gc > gf) { casa.v++; casa.p += 3; fora.d++; }
     else if (gf > gc) { fora.v++; fora.p += 3; casa.d++; }
-    else { casa.e++; fora.e++; casa.p++; fora.p++; }
+    else {
+      // Empate: 1 ponto para cada. Quem vence os pênaltis (shootout) leva +1.
+      casa.e++; fora.e++; casa.p++; fora.p++;
+      const pen = j.eventos && j.eventos.penaltis;
+      if (pen && pen.vencedor === j.casa) casa.p++;
+      else if (pen && pen.vencedor === j.fora) fora.p++;
+    }
   });
 
   const ordena = (a, b) => b.p - a.p || (b.gp - b.gc) - (a.gp - a.gc) || b.gp - a.gp;
@@ -145,8 +151,15 @@ function cardJogo(j) {
   const nomeCasa = casa ? `<span class="band">${casa.bandeira}</span>${casa.nome}` : '<span class="band">❔</span>A definir';
   const nomeFora = fora ? `<span class="band">${fora.bandeira}</span>${fora.nome}` : '<span class="band">❔</span>A definir';
 
+  const pen = j.placar && j.eventos && j.eventos.penaltis;
+  const penInfo = pen && pen.vencedor ? (() => {
+    const vt = timePorId(pen.vencedor);
+    const sc = (pen.casa != null && pen.fora != null) ? ` (${pen.casa}×${pen.fora})` : '';
+    return `<div class="penaltis-info">🥅 Nos pênaltis${sc}: <b>${vt.bandeira} ${vt.nome}</b> +1 ponto</div>`;
+  })() : '';
+
   const placar = j.placar
-    ? `<div class="placar">${j.placar[0]} <span class="x">×</span> ${j.placar[1]}</div>`
+    ? `<div class="placar-wrap"><div class="placar">${j.placar[0]} <span class="x">×</span> ${j.placar[1]}</div>${penInfo}</div>`
     : `<div class="placar futuro"><span class="hora">${fmtHora(j.data)}</span><span>${fmtData(j.data)}</span></div>`;
 
   const eventos = j.placar && j.eventos ? `

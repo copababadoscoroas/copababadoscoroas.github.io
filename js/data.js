@@ -178,4 +178,6 @@ const PATROCINADORES = [
   { nome: 'Dom Pacas Barbearia', desc: 'Barbearia', logo: 'assets/patrocinadores/dom-pacas-barbearia.jpg' },
   { nome: '77 Promoções', desc: 'Eventos e promoções', logo: 'assets/patrocinadores/77-promocoes.png' },
   { nome: 'Diogo Rodrigues', desc: 'Consultor imobiliário · Creci-AL 5018', logo: 'assets/patrocinadores/diogo-rodrigues.png' },
+  { nome: 'Arthur Meneses', desc: 'Fisioterapeuta · Performance', logo: 'assets/patrocinadores/arthur-meneses.jpg' },
+  { nome: 'Grão Firme', desc: 'Hamburgueria artesanal', logo: 'assets/patrocinadores/grao-firme.jpg' },
 ];

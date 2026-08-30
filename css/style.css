@@ -405,6 +405,20 @@ h1, h2, h3, .display {
 .jogo .placar.futuro { font-size: 15px; color: var(--texto-2); flex-direction: column; gap: 0; }
 .jogo .placar.futuro .hora { font-size: 22px; color: var(--texto); }
 
+.jogo .placar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.penaltis-info {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--texto-2);
+  background: rgba(245, 200, 76, 0.12);
+  border: 1px solid rgba(245, 200, 76, 0.35);
+  border-radius: 999px;
+  padding: 3px 9px;
+  max-width: 150px;
+}
+.penaltis-info b { color: var(--ouro-claro); }
+
 .jogo-meta {
   grid-column: 1 / -1;
   text-align: center;

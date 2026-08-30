@@ -109,8 +109,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="js/data.js?v=20260722j"></script>
-  <script src="js/supabase.js?v=20260722j"></script>
+  <script src="js/data.js?v=20260812a"></script>
+  <script src="js/supabase.js?v=20260812a"></script>
   <script>
     const $ = (s) => document.querySelector(s);
     const time = (id) => SELECOES.find((s) => s.id === id);
@@ -244,6 +244,28 @@
           <button class="btn-mini remover" onclick="rmEvento(${j.id},'${tipo}',${i})">✕</button>
         </div>`).join('') : '';
 
+      // Bloco de pênaltis: só aparece quando o placar está empatado.
+      const empate = r && r.placar[0] !== '' && Number(r.placar[0]) === Number(r.placar[1]);
+      const pen = (r && r.eventos.penaltis) || {};
+      const blocoPenaltis = empate ? `
+        <div class="sub-bloco"><div class="rotulo">🥅 Pênaltis — empate! Quem vencer leva +1 ponto na tabela</div>
+          <div class="admin-linha">
+            <select onchange="mudaPenaltis(${j.id},'vencedor',this.value)">
+              <option value="">— sem disputa / ninguém —</option>
+              <option value="${j.casa}" ${pen.vencedor === j.casa ? 'selected' : ''}>${casa.bandeira} ${casa.nome} venceu</option>
+              <option value="${j.fora}" ${pen.vencedor === j.fora ? 'selected' : ''}>${fora.bandeira} ${fora.nome} venceu</option>
+            </select>
+          </div>
+          <div class="admin-linha">
+            <span style="font-size:12px; color:var(--texto-2)">Placar dos pênaltis (opcional):</span>
+            <input type="number" min="0" max="99" value="${pen.casa != null ? pen.casa : ''}" placeholder="${casa.nome}"
+                   onchange="mudaPenaltis(${j.id},'casa',this.value)" style="flex:0 0 64px">
+            <span style="color:var(--texto-2)">×</span>
+            <input type="number" min="0" max="99" value="${pen.fora != null ? pen.fora : ''}" placeholder="${fora.nome}"
+                   onchange="mudaPenaltis(${j.id},'fora',this.value)" style="flex:0 0 64px">
+          </div>
+        </div>` : '';
+
       return `
         <div class="card" id="jogo-admin-${j.id}">
           <span class="chip">${j.fase === 'Pontos Corridos' ? `Rodada ${j.rodada}` : j.fase} · ${dataStr}${r && r.salvo ? ' · ✅ salvo' : ''}</span>
@@ -269,6 +291,7 @@
               ${linhasCartao('vermelhos')}
               <button class="btn-mini" onclick="addEvento(${j.id},'vermelhos')">+ vermelho</button>
             </div>
+            ${blocoPenaltis}
             <button class="btn-salvar" onclick="salvarResultado(${j.id})">💾 Salvar resultado</button>
             ${r.salvo ? `<button class="btn-apagar" onclick="apagarResultado(${j.id})">Apagar resultado (volta a "não jogado")</button>` : ''}
           ` : '<p class="subtitulo" style="margin:0">Preencha o placar para lançar o resultado.</p>'}
@@ -314,6 +337,17 @@
       reRender(id);
     }
 
+    function mudaPenaltis(id, campo, valor) {
+      const r = garanteJogo(id);
+      if (!r.eventos.penaltis) r.eventos.penaltis = {};
+      if (campo === 'vencedor') {
+        r.eventos.penaltis.vencedor = valor || undefined;
+      } else {
+        r.eventos.penaltis[campo] = valor === '' ? undefined : Math.max(0, Number(valor));
+      }
+      reRender(id);
+    }
+
     async function salvarResultado(id) {
       const r = RES[id];
       const msg = document.getElementById(`msg-jogo-${id}`);
@@ -323,6 +357,16 @@
         amarelos: r.eventos.amarelos.filter((c) => c.jogador),
         vermelhos: r.eventos.vermelhos.filter((c) => c.jogador),
       };
+      // Pênaltis só valem em empate e quando há vencedor definido.
+      const empate = Number(r.placar[0]) === Number(r.placar[1]);
+      const pen = r.eventos.penaltis;
+      if (empate && pen && pen.vencedor) {
+        eventos.penaltis = { vencedor: pen.vencedor };
+        if (pen.casa != null && pen.fora != null) {
+          eventos.penaltis.casa = pen.casa;
+          eventos.penaltis.fora = pen.fora;
+        }
+      }
       const { error } = await supa.from('copa_resultados').upsert({
         jogo_id: id,
         placar_casa: r.placar[0],
