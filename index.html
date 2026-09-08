@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260907b">
+  <link rel="stylesheet" href="css/style.css?v=20260908a">
   <script>
     // RESET DE LANÇAMENTO — roda antes de tudo, embutido no HTML (não depende do app.js
     // estar atualizado no cache). Zera figurinhas/álbum/palpites de quem testou antes.
@@ -81,13 +81,20 @@
         <p class="local" style="margin-top:12px" id="contagem-rotulo">🏆 Contagem para as finais</p>
       </div>
 
+      <h2 class="titulo-secao">Rumo às <span class="destaque">finais</span> 🏆</h2>
+      <div id="chaveamento-finais"></div>
+
       <h2 class="titulo-secao">Próximos <span class="destaque">jogos</span></h2>
       <div id="proximos-jogos"></div>
+
+      <a class="banner-bolao banner-craque" href="#" onclick="irPara('craque'); return false;" id="craque-teaser"></a>
 
       <a class="banner-bolao" href="#" onclick="abrirBolao(); return false;">
         🎯 <span><b>Bolão da Copa</b> — dê seus palpites e marque pontos!</span>
         <span class="seta">→</span>
       </a>
+
+      <div id="enquete-campeao"></div>
 
       <h2 class="titulo-secao">Últimos <span class="destaque">resultados</span></h2>
       <div id="ultimos-resultados"></div>
@@ -244,10 +251,19 @@
       </div>
     </section>
 
+    <!-- ===================== CRAQUE DA RODADA ===================== -->
+    <section class="secao" id="secao-craque">
+      <button class="voltar" onclick="irPara('inicio')">← Voltar ao Início</button>
+      <h2 class="titulo-secao">Craque da <span class="destaque">Rodada</span> ⭐</h2>
+      <p class="subtitulo">A galera escolhe o melhor jogador de cada rodada. Seu voto conta!</p>
+      <div id="craque-conteudo"></div>
+    </section>
+
     <!-- ===================== MAIS ===================== -->
     <section class="secao" id="secao-mais">
       <h2 class="titulo-secao">Mais da <span class="destaque">Copa</span></h2>
       <div class="hub-mais">
+        <button class="hub-item" onclick="irPara('craque')"><span class="hub-ico">⭐</span><span><b>Craque da Rodada</b><small>Vote no melhor jogador</small></span><span class="hub-seta">→</span></button>
         <button class="hub-item" onclick="irPara('fotos')"><span class="hub-ico">📸</span><span><b>Fotos dos jogos</b><small>Reviva e compre as fotos</small></span><span class="hub-seta">→</span></button>
         <button class="hub-item" onclick="irPara('patro')"><span class="hub-ico">🤝</span><span><b>Patrocinadores</b><small>Quem apoia o nosso baba</small></span><span class="hub-seta">→</span></button>
       </div>
@@ -351,7 +367,7 @@
   <!-- Supabase (dados ao vivo + bolão geral) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/data.js?v=20260907c"></script>
-  <script src="js/supabase.js?v=20260812a"></script>
-  <script src="js/app.js?v=20260907b"></script>
+  <script src="js/supabase.js?v=20260908a"></script>
+  <script src="js/app.js?v=20260908a"></script>
 </body>
 </html>

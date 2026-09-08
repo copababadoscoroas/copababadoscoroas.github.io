@@ -1233,3 +1233,87 @@ h1, h2, h3, .display {
   .grade-selecoes { grid-template-columns: repeat(4, 1fr); }
   .grade-figurinhas { grid-template-columns: repeat(6, 1fr); }
 }
+
+/* ===================== Chaveamento das Finais ===================== */
+.chave { display: flex; flex-direction: column; gap: 10px; }
+.chave-linha {
+  border: 1px solid var(--linha); border-radius: 16px; padding: 12px 14px;
+  background: linear-gradient(135deg, var(--card-2), var(--card));
+}
+.chave-linha.final { border-color: var(--ouro); background: linear-gradient(135deg, rgba(217,166,43,.22), var(--card)); }
+.chave-linha.bronze { border-color: #b06a2c; }
+.chave-linha.elim { opacity: .8; }
+.chave-tag { font-size: 10px; font-weight: 800; letter-spacing: .06em; color: var(--texto-2); text-transform: uppercase; }
+.chave-linha.final .chave-tag { color: var(--ouro-claro); }
+.chave-tag b { color: var(--texto-2); font-weight: 700; }
+.chave-times { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.chave-times .ct {
+  flex: 1; display: flex; flex-direction: column; gap: 2px; text-align: center;
+  font-family: 'Bebas Neue', sans-serif; font-size: 20px; line-height: 1; letter-spacing: .02em;
+}
+.chave-times .ct small { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; color: var(--texto-2); letter-spacing: 0; }
+.chave-linha.elim .chave-times .ct { text-align: left; }
+.chave-times .vs { flex: 0 0 auto; color: var(--texto-2); font-weight: 800; }
+.chave-obs { font-size: 11px; color: var(--texto-2); margin: 8px 2px 0; }
+
+/* ===================== Craque da Rodada ===================== */
+.banner-craque {
+  background: linear-gradient(135deg, rgba(217,166,43,.35), rgba(13,32,55,.65));
+  border-color: var(--ouro);
+}
+.banner-craque .seta { color: var(--ouro-claro); }
+.craque-cabeca { margin-bottom: 10px; }
+.craque-time { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: .02em; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.craque-time .band { font-size: 24px; }
+.craque-jogadores { display: flex; flex-direction: column; gap: 8px; }
+.craque-jog {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; cursor: pointer;
+  background: var(--card-2); border: 1px solid var(--linha); border-radius: 12px;
+  padding: 11px 12px; color: var(--texto); font-family: inherit; font-size: 14px; font-weight: 600;
+  transition: border-color .15s, background .15s;
+}
+.craque-jog:hover, .craque-jog:focus-visible { border-color: var(--ouro); background: rgba(217,166,43,.14); outline: none; }
+.craque-jog .num {
+  flex: 0 0 auto; min-width: 24px; height: 24px; display: grid; place-items: center;
+  background: var(--ouro); color: #2b1d00; border-radius: 7px; font-size: 12px; font-weight: 800;
+}
+.craque-jog .nome { flex: 1; }
+.craque-jog .votar { margin-left: auto; color: var(--ouro-claro); font-weight: 800; font-size: 13px; }
+.craque-linha { margin: 10px 0; }
+.craque-linha .cl-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+.craque-linha .cl-topo small { color: var(--ouro-claro); font-weight: 700; }
+.craque-linha .cl-num { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--texto-2); }
+.craque-linha.lider .cl-num { color: var(--ouro-claro); }
+.cl-barra { height: 8px; background: var(--card-2); border-radius: 99px; overflow: hidden; }
+.cl-barra span { display: block; height: 100%; background: linear-gradient(90deg, var(--ouro), var(--ouro-claro)); border-radius: 99px; transition: width .5s ease; }
+.craque-linha.lider .cl-barra span { background: linear-gradient(90deg, var(--ouro-claro), #fff3cf); }
+.craque-linha.meu .cl-topo { color: var(--ouro-claro); }
+.craque-total { font-size: 12px; color: var(--texto-2); text-align: center; margin-top: 10px; }
+
+/* ===================== Enquete do Campeão ===================== */
+.enq-botoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; }
+.enq-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer;
+  background: var(--card-2); border: 1px solid var(--linha); border-radius: 12px; padding: 12px 6px;
+  color: var(--texto); font-family: inherit; font-size: 24px; transition: border-color .15s, background .15s;
+}
+.enq-btn span { font-size: 11px; font-weight: 700; }
+.enq-btn:hover, .enq-btn:focus-visible { border-color: var(--ouro); background: rgba(217,166,43,.14); outline: none; }
+.enq-linha { margin: 9px 0; }
+.enq-topo { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+.enq-topo small { color: var(--ouro-claro); font-weight: 700; }
+.enq-barra { height: 8px; background: var(--card-2); border-radius: 99px; overflow: hidden; }
+.enq-barra span { display: block; height: 100%; background: linear-gradient(90deg, var(--verde-copa), var(--verde)); border-radius: 99px; transition: width .5s ease; }
+.enq-linha.meu .enq-topo { color: var(--ouro-claro); }
+.enq-linha.meu .enq-barra span { background: linear-gradient(90deg, var(--ouro), var(--ouro-claro)); }
+
+/* ===================== Chuteira de Ouro ===================== */
+.chuteira-ouro {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  background: linear-gradient(135deg, rgba(217,166,43,.28), var(--card));
+  border: 1px solid var(--ouro); border-radius: 16px; padding: 12px 14px;
+}
+.chuteira-ouro .co-ico { font-size: 30px; }
+.chuteira-ouro .co-txt { display: flex; flex-direction: column; gap: 2px; }
+.chuteira-ouro .co-txt b { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: .04em; color: var(--ouro-claro); }
+.chuteira-ouro .co-txt span { font-size: 13px; font-weight: 600; }

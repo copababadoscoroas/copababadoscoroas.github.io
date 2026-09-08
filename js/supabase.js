@@ -179,3 +179,74 @@ async function buscarRankingBolao() {
     return null;
   }
 }
+
+// ---------- Craque da Rodada ----------
+// 1 voto por aparelho POR RODADA (trava no índice único do banco).
+async function enviarVotoCraque(rodada, jogador, time) {
+  if (!supa) return { ok: false };
+  try {
+    const { error } = await supa.from('copa_craque_votos').insert([{
+      device_id: deviceId(), rodada, jogador, time,
+    }]);
+    if (error) return { ok: false, jaVotou: error.code === '23505' };
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
+
+// Apuração de uma rodada: ranking dos mais votados + meu voto.
+async function buscarVotosCraque(rodada) {
+  if (!supa) return null;
+  try {
+    const { data, error } = await supa
+      .from('copa_craque_votos')
+      .select('device_id, jogador, time')
+      .eq('rodada', rodada);
+    if (error) return null;
+    const meu = data.find((v) => v.device_id === deviceId());
+    const mapa = {};
+    data.forEach((v) => {
+      const k = `${v.time}|${v.jogador}`;
+      mapa[k] = mapa[k] || { jogador: v.jogador, time: v.time, total: 0 };
+      mapa[k].total++;
+    });
+    const ranking = Object.values(mapa).sort((a, b) => b.total - a.total);
+    return { ranking, total: data.length, meuVoto: meu ? { jogador: meu.jogador, time: meu.time } : null };
+  } catch {
+    return null;
+  }
+}
+
+// ---------- Enquete: quem vai ser o campeão ----------
+// 1 voto por aparelho (device_id é a chave primária no banco).
+async function enviarVotoCampeao(time) {
+  if (!supa) return { ok: false };
+  try {
+    const { error } = await supa.from('copa_enquete_campeao').insert([{
+      device_id: deviceId(), time,
+    }]);
+    if (error) return { ok: false, jaVotou: error.code === '23505' };
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
+
+async function buscarEnquete() {
+  if (!supa) return null;
+  try {
+    const { data, error } = await supa
+      .from('copa_enquete_campeao')
+      .select('device_id, time');
+    if (error) return null;
+    const meu = data.find((v) => v.device_id === deviceId());
+    const mapa = {};
+    data.forEach((v) => {
+      mapa[v.time] = (mapa[v.time] || 0) + 1;
+    });
+    return { contagem: mapa, total: data.length, meuVoto: meu ? meu.time : null };
+  } catch {
+    return null;
+  }
+}

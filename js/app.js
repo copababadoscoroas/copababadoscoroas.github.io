@@ -293,7 +293,14 @@ function renderRankings() {
         </li>`).join('')}</ol>`
     : '<p class="vazio">Ainda não há registros.</p>';
 
-  $('#rank-gols').innerHTML = lista(r.gols, '⚽');
+  const chuteira = r.gols.length ? `
+    <div class="chuteira-ouro">
+      <div class="co-ico">👟</div>
+      <div class="co-txt"><b>Chuteira de Ouro</b>
+        <span>${r.gols[0].nome} — ${r.gols[0].time.bandeira} ${r.gols[0].time.nome} · ${r.gols[0].total} gol${r.gols[0].total === 1 ? '' : 's'}</span>
+      </div>
+    </div>` : '';
+  $('#rank-gols').innerHTML = chuteira + lista(r.gols, '⚽');
   $('#rank-assist').innerHTML = lista(r.assist, '👟');
   $('#rank-amarelos').innerHTML = lista(r.amarelos, '🟨', 'amarelo');
   $('#rank-vermelhos').innerHTML = lista(r.vermelhos, '🟥', 'vermelho');
@@ -1000,6 +1007,182 @@ function renderHome() {
     </div>` : '');
 }
 
+// ---------- Craque da Rodada (votação, 1 voto por aparelho/rodada) ----------
+function rodadaParaCraque() {
+  const rodadas = [...new Set(JOGOS.filter((j) => j.fase === 'Pontos Corridos').map((j) => j.rodada))].sort((a, b) => a - b);
+  let alvo = null;
+  rodadas.forEach((r) => {
+    const jogos = JOGOS.filter((j) => j.fase === 'Pontos Corridos' && j.rodada === r);
+    if (jogos.some((j) => j.placar)) alvo = r; // última rodada com pelo menos 1 resultado
+  });
+  return alvo;
+}
+
+function timesDaRodada(r) {
+  const ids = new Set();
+  JOGOS.filter((j) => j.fase === 'Pontos Corridos' && j.rodada === r).forEach((j) => {
+    if (j.casa) ids.add(j.casa);
+    if (j.fora) ids.add(j.fora);
+  });
+  return [...ids].map(timePorId).filter((t) => t && t.elenco && t.elenco.length);
+}
+
+function craqueResultado(dados, meuVoto, parcial) {
+  const total = dados.total || 0;
+  const top = dados.ranking.slice(0, 10);
+  const linhas = top.map((x, i) => {
+    const pct = total ? Math.round((x.total / total) * 100) : 0;
+    const t = timePorId(x.time);
+    const eu = meuVoto && meuVoto.jogador === x.jogador && meuVoto.time === x.time;
+    return `<div class="craque-linha ${i === 0 ? 'lider' : ''} ${eu ? 'meu' : ''}">
+      <div class="cl-topo"><span>${i === 0 ? '👑 ' : ''}${t ? t.bandeira : ''} <b>${escapaHtml(x.jogador)}</b>${eu ? ' <small>(seu voto)</small>' : ''}</span><span class="cl-num">${x.total}</span></div>
+      <div class="cl-barra"><span style="width:${pct}%"></span></div>
+    </div>`;
+  }).join('');
+  return `<div class="card">
+    <span class="chip">${parcial ? '📊 Parcial ao vivo' : '✅ Você votou! Veja a parcial'}</span>
+    ${linhas || '<p class="vazio">Seja o primeiro a votar!</p>'}
+    <p class="craque-total">${total} voto${total === 1 ? '' : 's'} nesta rodada</p>
+  </div>`;
+}
+
+async function renderCraque() {
+  const el = $('#craque-conteudo');
+  if (!el) return;
+  const r = rodadaParaCraque();
+  if (!r) {
+    el.innerHTML = '<div class="card"><p class="vazio">A votação do craque abre assim que a primeira rodada tiver resultado. ⚽</p></div>';
+    return;
+  }
+  const dados = await buscarVotosCraque(r);
+  if (!dados) {
+    el.innerHTML = '<div class="card"><p class="vazio">Sem conexão para carregar a votação agora. Tente novamente.</p></div>';
+    return;
+  }
+  const meuVoto = dados.meuVoto;
+  let html = `<div class="craque-cabeca card">
+    <span class="chip">⭐ Craque da Rodada ${r}</span>
+    <p class="subtitulo" style="margin:8px 0 0">Vote no melhor jogador da rodada. <b>1 voto por aparelho.</b></p>
+  </div>`;
+
+  if (meuVoto) {
+    html += craqueResultado(dados, meuVoto, false);
+  } else {
+    html += timesDaRodada(r).map((t) => `
+      <div class="card">
+        <div class="craque-time"><span class="band">${t.bandeira}</span> ${t.nome}</div>
+        <div class="craque-jogadores">
+          ${t.elenco.map((j) => `
+            <button class="craque-jog" data-jog="${escapaHtml(j.nome)}" data-time="${t.id}">
+              <span class="num">${j.n}</span><span class="nome">${escapaHtml(j.nome)}</span><span class="votar">Votar ›</span>
+            </button>`).join('')}
+        </div>
+      </div>`).join('');
+    if (dados.total > 0) html += craqueResultado(dados, null, true);
+  }
+  el.innerHTML = html;
+}
+
+async function votarCraque(jogador, time) {
+  const r = rodadaParaCraque();
+  if (!r) return;
+  const res = await enviarVotoCraque(r, jogador, time);
+  if (res.ok) { festejar(false); vibrar(30); }
+  else if (!res.jaVotou) { alert('Não deu para registrar seu voto agora. Tente de novo em instantes.'); return; }
+  renderCraque();
+  renderHome();
+}
+
+// Teaser do craque na tela inicial (líder atual da rodada)
+async function renderCraqueTeaser() {
+  const el = $('#craque-teaser');
+  if (!el) return;
+  const r = rodadaParaCraque();
+  if (!r) { el.style.display = 'none'; return; }
+  const dados = await buscarVotosCraque(r);
+  el.style.display = 'flex';
+  const lider = dados && dados.ranking[0];
+  const jaVotou = dados && dados.meuVoto;
+  el.innerHTML = `⭐ <span><b>Craque da Rodada ${r}</b> — ${
+    jaVotou ? (lider ? `líder: ${lider.jogador}` : 'veja a parcial') : 'vote no melhor jogador!'
+  }</span><span class="seta">→</span>`;
+}
+
+// ---------- Chaveamento das Finais (ao vivo, da classificação) ----------
+function renderChaveamento() {
+  const el = $('#chaveamento-finais');
+  if (!el) return;
+  const cl = calculaClassificacao();
+  const nome = (i) => (cl[i] ? `${cl[i].time.bandeira} ${cl[i].time.nome}` : '❔ A definir');
+  const pts = (i) => (cl[i] ? `${cl[i].p} pt${cl[i].p === 1 ? '' : 's'}` : '');
+  const algumJogo = JOGOS.some((j) => j.placar);
+  el.innerHTML = `
+    <div class="chave">
+      <div class="chave-linha final">
+        <span class="chave-tag">🏆 GRANDE FINAL <b>· dom 11/10, 16h20</b></span>
+        <div class="chave-times">
+          <span class="ct">${nome(0)}<small>${pts(0)}</small></span>
+          <span class="vs">×</span>
+          <span class="ct">${nome(1)}<small>${pts(1)}</small></span>
+        </div>
+      </div>
+      <div class="chave-linha bronze">
+        <span class="chave-tag">🥉 3º LUGAR <b>· dom 11/10, 15h30</b></span>
+        <div class="chave-times">
+          <span class="ct">${nome(2)}<small>${pts(2)}</small></span>
+          <span class="vs">×</span>
+          <span class="ct">${nome(3)}<small>${pts(3)}</small></span>
+        </div>
+      </div>
+      <div class="chave-linha elim">
+        <span class="chave-tag">❌ ELIMINADO</span>
+        <div class="chave-times"><span class="ct">${nome(4)}<small>${pts(4)}</small></span></div>
+      </div>
+    </div>
+    <p class="chave-obs">${algumJogo
+      ? 'Posições atuais na classificação — muda a cada rodada até 11/10.'
+      : 'Assim que a copa começar, o chaveamento se monta sozinho aqui.'}</p>`;
+}
+
+// ---------- Enquete: quem vai ser o campeão (1 voto por aparelho) ----------
+async function renderEnquete() {
+  const el = $('#enquete-campeao');
+  if (!el) return;
+  const confirmadas = SELECOES.filter((s) => s.confirmada);
+  if (confirmadas.length < 2) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  const dados = await buscarEnquete();
+  const meu = dados && dados.meuVoto;
+  const total = dados ? dados.total : 0;
+  let corpo;
+  if (meu) {
+    const ordenadas = [...confirmadas].sort((a, b) => (dados.contagem[b.id] || 0) - (dados.contagem[a.id] || 0));
+    corpo = ordenadas.map((s) => {
+      const n = dados.contagem[s.id] || 0;
+      const pct = total ? Math.round((n / total) * 100) : 0;
+      return `<div class="enq-linha ${meu === s.id ? 'meu' : ''}">
+        <div class="enq-topo"><span>${s.bandeira} ${s.nome}${meu === s.id ? ' <small>(seu voto)</small>' : ''}</span><span>${pct}%</span></div>
+        <div class="enq-barra"><span style="width:${pct}%"></span></div>
+      </div>`;
+    }).join('') + `<p class="craque-total">${total} voto${total === 1 ? '' : 's'}</p>`;
+  } else {
+    corpo = `<div class="enq-botoes">${confirmadas.map((s) => `
+      <button class="enq-btn" data-time="${s.id}">${s.bandeira}<span>${s.nome}</span></button>`).join('')}</div>`;
+  }
+  el.innerHTML = `<div class="card">
+    <span class="chip">🗳️ Quem vai ser o campeão?</span>
+    <p class="subtitulo" style="margin:6px 0 12px">${meu ? 'Resultado ao vivo:' : 'Vote na sua seleção. 1 voto por aparelho.'}</p>
+    ${corpo}
+  </div>`;
+}
+
+async function votarCampeao(time) {
+  const res = await enviarVotoCampeao(time);
+  if (res.ok) { festejar(false); vibrar(30); }
+  else if (!res.jaVotou) { alert('Não deu para registrar seu voto agora. Tente de novo em instantes.'); return; }
+  renderEnquete();
+}
+
 // ---------- "Cara de app": tutorial + instalar ----------
 const estaInstalado = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
@@ -1092,6 +1275,20 @@ document.addEventListener('DOMContentLoaded', () => {
   renderFotos();
   renderVideos();
   renderPatrocinadores();
+  renderChaveamento();
+  renderCraque();
+  renderCraqueTeaser();
+  renderEnquete();
+
+  // Votação (delegação): botões são recriados a cada render
+  $('#craque-conteudo')?.addEventListener('click', (e) => {
+    const b = e.target.closest('.craque-jog');
+    if (b) votarCraque(b.dataset.jog, b.dataset.time);
+  });
+  $('#enquete-campeao')?.addEventListener('click', (e) => {
+    const b = e.target.closest('.enq-btn');
+    if (b) votarCampeao(b.dataset.time);
+  });
 
   $('#btn-pacote').addEventListener('click', abrirPacote);
 
@@ -1108,7 +1305,11 @@ document.addEventListener('DOMContentLoaded', () => {
       renderSelecoes();
       renderAlbum();
       renderFotos();
+      renderChaveamento();
     }
+    renderCraque();       // votação vem do servidor
+    renderCraqueTeaser();
+    renderEnquete();
     renderBolao(); // sempre redesenha: prêmios/pagamentos vêm do servidor
 
     // Resultado novo desde a última visita? Confete de boas-vindas.
