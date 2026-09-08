@@ -91,10 +91,34 @@ function atualizaContagem() {
 // ---------- Classificação (calculada dos resultados) ----------
 // Pontos corridos: 1º e 2º fazem a final, 3º e 4º disputam o bronze,
 // o 5º está eliminado.
+// Pontos que um time fez em UM jogo (regulamento 6.1 e 6.2):
+// vitória no tempo normal = 3; shoot-out vencido = 2; shoot-out perdido = 1; derrota = 0.
+function pontosNoJogo(j, timeId) {
+  const gPro = j.casa === timeId ? j.placar[0] : j.placar[1];
+  const gCon = j.casa === timeId ? j.placar[1] : j.placar[0];
+  if (gPro > gCon) return 3;
+  if (gPro < gCon) return 0;
+  const pen = j.eventos && j.eventos.penaltis; // empate no tempo normal → shoot-out
+  if (pen && pen.vencedor === timeId) return 2;
+  if (pen && pen.vencedor) return 1; // perdeu o shoot-out
+  return 1; // empate sem shoot-out lançado ainda
+}
+
+// Confronto direto (6.3 I): saldo de pontos que A fez contra B nos jogos entre eles.
+function saldoConfrontoDireto(aId, bId) {
+  let saldo = 0;
+  JOGOS.filter((j) => j.fase === 'Pontos Corridos' && j.placar &&
+    ((j.casa === aId && j.fora === bId) || (j.casa === bId && j.fora === aId))
+  ).forEach((j) => {
+    saldo += pontosNoJogo(j, aId) - pontosNoJogo(j, bId);
+  });
+  return saldo;
+}
+
 function calculaClassificacao() {
   const tab = {};
   SELECOES.forEach((s) => {
-    tab[s.id] = { time: s, p: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0 };
+    tab[s.id] = { time: s, p: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, cartoes: 0 };
   });
 
   JOGOS.filter((j) => j.fase === 'Pontos Corridos' && j.placar).forEach((j) => {
@@ -107,15 +131,30 @@ function calculaClassificacao() {
     if (gc > gf) { casa.v++; casa.p += 3; fora.d++; }
     else if (gf > gc) { fora.v++; fora.p += 3; casa.d++; }
     else {
-      // Empate: 1 ponto para cada. Quem vence os pênaltis (shootout) leva +1.
+      // Empate no tempo normal (6.2): shoot-out decide. Vencedor 2, perdedor 1.
       casa.e++; fora.e++; casa.p++; fora.p++;
       const pen = j.eventos && j.eventos.penaltis;
       if (pen && pen.vencedor === j.casa) casa.p++;
       else if (pen && pen.vencedor === j.fora) fora.p++;
     }
+    // Cartões por time (6.3 IV)
+    if (j.eventos) {
+      (j.eventos.amarelos || []).forEach((c) => { if (tab[c.time]) tab[c.time].cartoes++; });
+      (j.eventos.vermelhos || []).forEach((c) => { if (tab[c.time]) tab[c.time].cartoes++; });
+    }
   });
 
-  const ordena = (a, b) => b.p - a.p || (b.gp - b.gc) - (a.gp - a.gc) || b.gp - a.gp;
+  // Desempate oficial (6.3): I confronto direto · II mais vitórias · III saldo de gols · IV menos cartões.
+  const ordena = (a, b) => {
+    if (b.p !== a.p) return b.p - a.p;
+    const cd = saldoConfrontoDireto(a.time.id, b.time.id); // >0 → A à frente
+    if (cd !== 0) return -cd;
+    if (b.v !== a.v) return b.v - a.v;
+    const sg = (b.gp - b.gc) - (a.gp - a.gc);
+    if (sg !== 0) return sg;
+    if (a.cartoes !== b.cartoes) return a.cartoes - b.cartoes; // menos cartões à frente
+    return b.gp - a.gp; // último recurso: mais gols pró
+  };
   return Object.values(tab).sort(ordena);
 }
 
@@ -141,6 +180,10 @@ function renderClassificacao() {
       <p>🟩 <b>1º e 2º</b> — fazem a GRANDE FINAL</p>
       <p>🟨 <b>3º e 4º</b> — disputam o 3º lugar</p>
       <p>🟥 <b>5º</b> — eliminado</p>
+    </div>
+    <div class="card legenda-zonas">
+      <p><b>Pontuação:</b> vitória <b>3</b> · shoot-out vencido <b>2</b> · shoot-out perdido <b>1</b> · derrota <b>0</b></p>
+      <p><b>Desempate:</b> 1º confronto direto · 2º mais vitórias · 3º saldo de gols · 4º menos cartões</p>
     </div>`;
 }
 
@@ -155,7 +198,7 @@ function cardJogo(j) {
   const penInfo = pen && pen.vencedor ? (() => {
     const vt = timePorId(pen.vencedor);
     const sc = (pen.casa != null && pen.fora != null) ? ` (${pen.casa}×${pen.fora})` : '';
-    return `<div class="penaltis-info">🥅 Nos pênaltis${sc}: <b>${vt.bandeira} ${vt.nome}</b> +1 ponto</div>`;
+    return `<div class="penaltis-info">🥅 Shoot-out${sc}: <b>${vt.bandeira} ${vt.nome}</b> venceu · 2×1 pts</div>`;
   })() : '';
 
   const placar = j.placar

@@ -248,7 +248,7 @@
       const empate = r && r.placar[0] !== '' && Number(r.placar[0]) === Number(r.placar[1]);
       const pen = (r && r.eventos.penaltis) || {};
       const blocoPenaltis = empate ? `
-        <div class="sub-bloco"><div class="rotulo">🥅 Pênaltis — empate! Quem vencer leva +1 ponto na tabela</div>
+        <div class="sub-bloco"><div class="rotulo">🥅 Shoot-out — empate no tempo normal! Vencedor 2 pts, perdedor 1 pt</div>
           <div class="admin-linha">
             <select onchange="mudaPenaltis(${j.id},'vencedor',this.value)">
               <option value="">— sem disputa / ninguém —</option>
