@@ -1275,7 +1275,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderFotos();
   renderVideos();
   renderPatrocinadores();
-  renderChaveamento();
   renderCraque();
   renderCraqueTeaser();
   renderEnquete();
@@ -1305,7 +1304,6 @@ document.addEventListener('DOMContentLoaded', () => {
       renderSelecoes();
       renderAlbum();
       renderFotos();
-      renderChaveamento();
     }
     renderCraque();       // votação vem do servidor
     renderCraqueTeaser();
