@@ -1224,7 +1224,7 @@ h1, h2, h3, .display {
 .vazio { text-align: center; color: var(--texto-2); font-size: 13px; padding: 30px 10px; }
 
 @media (max-width: 480px) {
-  .topo .titulos .assoc { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+  .topo .titulos .assoc { letter-spacing: 0.08em; }
   .topo .titulos h1 { font-size: 20px; white-space: nowrap; }
   .selo-tema { display: none; }
 }

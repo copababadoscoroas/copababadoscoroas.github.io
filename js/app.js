@@ -71,8 +71,16 @@ function poeNumero(sel, valor) {
 }
 
 function atualizaContagem() {
-  const alvo = new Date(COPA.inicio).getTime();
+  // A copa já começou: agora a contagem é para as FINAIS (11/10).
+  // Alvo = próxima final ainda por vir (3º lugar 15h30 → Grande Final 16h20).
+  const finais = JOGOS
+    .filter((j) => j.fase === 'Disputa 3º lugar' || j.fase === 'GRANDE FINAL')
+    .map((j) => new Date(j.data).getTime())
+    .sort((a, b) => a - b);
   const agora = Date.now();
+  const grandeFinal = finais.length ? finais[finais.length - 1] : new Date(COPA.inicio).getTime();
+  const proxima = finais.find((t) => t > agora);
+  const alvo = proxima || grandeFinal;
   let diff = Math.max(0, alvo - agora);
 
   const dias = Math.floor(diff / 86400000);
@@ -85,7 +93,14 @@ function atualizaContagem() {
   poeNumero('#cont-min', String(min).padStart(2, '0'));
   poeNumero('#cont-seg', String(seg).padStart(2, '0'));
 
-  if (diff === 0) $('#contagem-rotulo').textContent = 'A BOLA JÁ ESTÁ ROLANDO!';
+  const rot = $('#contagem-rotulo');
+  if (!proxima) {
+    rot.textContent = '👑 Temos um campeão! Obrigado a todos!';
+  } else if (finais.length > 1 && alvo === finais[0]) {
+    rot.textContent = '🏆 Faltam para as FINAIS · dom 11/10, 15h30';
+  } else {
+    rot.textContent = '🏆 Falta para a GRANDE FINAL · dom 11/10, 16h20';
+  }
 }
 
 // ---------- Classificação (calculada dos resultados) ----------
