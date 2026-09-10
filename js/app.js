@@ -575,6 +575,99 @@ function renderAlbum() {
     <p class="subtitulo" style="margin-top:16px">🎴 Mais <b>${pendentes}</b> ${pendentes > 1 ? 'seleções entram' : 'seleção entra'} no álbum após o sorteio!</p>` : '');
 }
 
+// ---------- Compartilhar meu álbum (imagem pro Status do WhatsApp) ----------
+function _roundRect(ctx, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function desenhaCardAlbum(ctx, W, H, coladas, total, pct) {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#0d2038'); g.addColorStop(1, '#081019');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const rg = ctx.createRadialGradient(W / 2, H * 0.14, 60, W / 2, H * 0.14, W * 0.85);
+  rg.addColorStop(0, 'rgba(245,200,76,0.20)'); rg.addColorStop(1, 'rgba(245,200,76,0)');
+  ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = '#d9a62b'; ctx.lineWidth = 10;
+  _roundRect(ctx, 36, 36, W - 72, H - 72, 44); ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.font = '130px serif'; ctx.fillText('🏆', W / 2, 250);
+  ctx.fillStyle = '#f5c84c'; ctx.font = 'bold 40px sans-serif';
+  ctx.fillText('II COPA BABA DOS COROAS', W / 2, 335);
+  ctx.fillStyle = '#ffffff'; ctx.font = 'bold 64px sans-serif';
+  ctx.fillText('MEU ÁLBUM', W / 2, 440);
+
+  ctx.fillStyle = '#f5c84c'; ctx.font = 'bold 300px sans-serif';
+  ctx.fillText(pct + '%', W / 2, 780);
+  ctx.fillStyle = '#ffffff'; ctx.font = '44px sans-serif';
+  ctx.fillText(coladas + ' de ' + total + ' figurinhas', W / 2, 860);
+
+  const bx = 150, bw = W - 300, by = 920, bh = 40;
+  ctx.fillStyle = 'rgba(255,255,255,0.15)'; _roundRect(ctx, bx, by, bw, bh, 20); ctx.fill();
+  ctx.fillStyle = '#d9a62b'; _roundRect(ctx, bx, by, Math.max(bh, bw * pct / 100), bh, 20); ctx.fill();
+
+  ctx.fillStyle = '#f5c84c'; ctx.font = 'bold 48px sans-serif';
+  ctx.fillText(pct >= 100 ? 'ÁLBUM COMPLETO! 🎉' : (pct >= 50 ? 'Tô quase lá! 🔥' : 'Bora completar! ⚽'), W / 2, 1040);
+
+  ctx.fillStyle = '#cdd3e6'; ctx.font = '34px sans-serif';
+  ctx.fillText('Baixe o app e monte o seu:', W / 2, 1150);
+  ctx.fillStyle = '#f5c84c'; ctx.font = 'bold 42px sans-serif';
+  ctx.fillText('copababadoscoroas.github.io', W / 2, 1205);
+  ctx.fillStyle = '#8e93a8'; ctx.font = '26px sans-serif';
+  ctx.fillText('feito por HUB Sertão Conecta', W / 2, 1285);
+}
+
+async function gerarBlobAlbum() {
+  const album = lerAlbum();
+  const total = TODAS_FIGURINHAS.length;
+  const coladas = TODAS_FIGURINHAS.filter((f) => album[f.fig]).length;
+  const pct = total ? Math.round((coladas / total) * 100) : 0;
+  const W = 1080, H = 1350;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  desenhaCardAlbum(ctx, W, H, coladas, total, pct);
+  const blob = await new Promise((res) => cv.toBlob(res, 'image/png', 0.92));
+  return { blob, pct };
+}
+
+async function compartilharAlbum() {
+  const btn = $('#btn-share-album');
+  if (btn) { btn.disabled = true; btn.textContent = '🎨 Gerando imagem…'; }
+  try {
+    const { blob, pct } = await gerarBlobAlbum();
+    const texto = `Meu álbum da II Copa Baba dos Coroas está ${pct}% completo! 🎴👑 Baixe o app e monte o seu: https://copababadoscoroas.github.io/`;
+    const file = new File([blob], 'meu-album-copa.png', { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], text: texto });
+        return;
+      } catch (e) { if (e.name === 'AbortError') return; }
+    }
+    // Fallback (PC/navegador sem compartilhamento de arquivo): baixa a imagem e abre o WhatsApp
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'meu-album-copa.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
+    alert('Imagem baixada! 📲 Agora é só postar no seu Status do WhatsApp.');
+  } catch (e) {
+    alert('Não deu para gerar a imagem agora. Tente de novo.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📲 Compartilhar meu álbum'; }
+  }
+}
+
 // ---------- Bolão de palpites ----------
 // v1: palpites salvos no aparelho (localStorage). O ranking geral entre
 // todos os palpiteiros vem junto com o Supabase.
@@ -1290,6 +1383,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   $('#btn-pacote').addEventListener('click', abrirPacote);
+  $('#btn-share-album')?.addEventListener('click', compartilharAlbum);
 
   registrarAcesso(); // conta 1 acesso deste aparelho por dia (para o painel do admin)
 

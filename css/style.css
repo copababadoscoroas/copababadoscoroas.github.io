@@ -1317,3 +1317,15 @@ h1, h2, h3, .display {
 .chuteira-ouro .co-txt { display: flex; flex-direction: column; gap: 2px; }
 .chuteira-ouro .co-txt b { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: .04em; color: var(--ouro-claro); }
 .chuteira-ouro .co-txt span { font-size: 13px; font-weight: 600; }
+
+/* ===================== Compartilhar álbum ===================== */
+.btn-share-album {
+  width: 100%; margin-top: 12px; cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 800;
+  color: #123c22; border: none; border-radius: 12px; padding: 12px;
+  background: linear-gradient(135deg, var(--ouro), var(--ouro-claro));
+  transition: filter .15s, transform .08s;
+}
+.btn-share-album:hover { filter: brightness(1.06); }
+.btn-share-album:active { transform: scale(.98); }
+.btn-share-album:disabled { opacity: .7; cursor: default; }
