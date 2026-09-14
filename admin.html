@@ -266,19 +266,41 @@
           </div>
         </div>` : '';
 
+      // W.O. (algum time não compareceu): vitória 3×0 do presente, sem gols.
+      const woAusente = (r && r.eventos.wo && r.eventos.wo.ausente) || '';
+      const woAtivo = !!woAusente;
+      const ausenteTime = woAusente ? time(woAusente) : null;
+      const presenteTime = woAusente ? (woAusente === j.casa ? fora : casa) : null;
+
+      const blocoWO = `
+        <div class="sub-bloco"><div class="rotulo">🚫 W.O. — algum time não compareceu?</div>
+          <div class="admin-linha">
+            <select onchange="mudaWO(${j.id}, this.value)">
+              <option value="">— não, jogo normal —</option>
+              <option value="${j.casa}" ${woAusente === j.casa ? 'selected' : ''}>${casa.bandeira} ${casa.nome} não compareceu (perde 0×3)</option>
+              <option value="${j.fora}" ${woAusente === j.fora ? 'selected' : ''}>${fora.bandeira} ${fora.nome} não compareceu (perde 0×3)</option>
+            </select>
+          </div>
+        </div>`;
+
       return `
         <div class="card" id="jogo-admin-${j.id}">
           <span class="chip">${j.fase === 'Pontos Corridos' ? `Rodada ${j.rodada}` : j.fase} · ${dataStr}${r && r.salvo ? ' · ✅ salvo' : ''}</span>
           <div class="placar-admin">
             <span class="lado">${casa.bandeira}<br>${casa.nome}</span>
-            <input type="number" min="0" max="99" value="${r ? r.placar[0] : ''}" placeholder="-"
+            <input type="number" min="0" max="99" value="${r ? r.placar[0] : ''}" placeholder="-" ${woAtivo ? 'disabled' : ''}
                    onchange="mudaPlacar(${j.id}, 0, this.value)" class="admin-linha" style="flex:0 0 56px">
             <span style="color:var(--texto-2)">×</span>
-            <input type="number" min="0" max="99" value="${r ? r.placar[1] : ''}" placeholder="-"
+            <input type="number" min="0" max="99" value="${r ? r.placar[1] : ''}" placeholder="-" ${woAtivo ? 'disabled' : ''}
                    onchange="mudaPlacar(${j.id}, 1, this.value)" style="flex:0 0 56px">
             <span class="lado">${fora.bandeira}<br>${fora.nome}</span>
           </div>
-          ${r ? `
+          ${blocoWO}
+          ${r ? (woAtivo ? `
+            <p class="subtitulo" style="margin:6px 0 10px">🚫 <b>${ausenteTime.nome}</b> não compareceu. Vitória de <b>${presenteTime.bandeira} ${presenteTime.nome}</b> por <b>3×0</b> (W.O.). Sem gols para a artilharia.</p>
+            <button class="btn-salvar" onclick="salvarResultado(${j.id})">💾 Salvar resultado</button>
+            ${r.salvo ? `<button class="btn-apagar" onclick="apagarResultado(${j.id})">Apagar resultado (volta a "não jogado")</button>` : ''}
+          ` : `
             <div class="sub-bloco"><div class="rotulo">⚽ Gols (com assistência opcional)</div>
               ${linhasGols}
               <button class="btn-mini" onclick="addEvento(${j.id},'gols')">+ adicionar gol</button>
@@ -294,7 +316,7 @@
             ${blocoPenaltis}
             <button class="btn-salvar" onclick="salvarResultado(${j.id})">💾 Salvar resultado</button>
             ${r.salvo ? `<button class="btn-apagar" onclick="apagarResultado(${j.id})">Apagar resultado (volta a "não jogado")</button>` : ''}
-          ` : '<p class="subtitulo" style="margin:0">Preencha o placar para lançar o resultado.</p>'}
+          `) : '<p class="subtitulo" style="margin:0">Preencha o placar (ou marque W.O.) para lançar o resultado.</p>'}
           <div class="msg" id="msg-jogo-${j.id}"></div>
         </div>`;
     }
@@ -337,6 +359,20 @@
       reRender(id);
     }
 
+    function mudaWO(id, ausente) {
+      const j = JOGOS.find((x) => x.id === id);
+      const r = garanteJogo(id);
+      if (!ausente) {
+        delete r.eventos.wo;
+      } else {
+        r.eventos.wo = { ausente };
+        r.placar = ausente === j.casa ? [0, 3] : [3, 0]; // 3×0 para quem compareceu
+        r.eventos.gols = [];       // W.O. não gera gols/artilharia
+        delete r.eventos.penaltis; // não há shoot-out em W.O.
+      }
+      reRender(id);
+    }
+
     function mudaPenaltis(id, campo, valor) {
       const r = garanteJogo(id);
       if (!r.eventos.penaltis) r.eventos.penaltis = {};
@@ -357,6 +393,8 @@
         amarelos: r.eventos.amarelos.filter((c) => c.jogador),
         vermelhos: r.eventos.vermelhos.filter((c) => c.jogador),
       };
+      // W.O.: registra o ausente (o placar 3×0 já está em r.placar)
+      if (r.eventos.wo && r.eventos.wo.ausente) eventos.wo = r.eventos.wo;
       // Pênaltis só valem em empate e quando há vencedor definido.
       const empate = Number(r.placar[0]) === Number(r.placar[1]);
       const pen = r.eventos.penaltis;

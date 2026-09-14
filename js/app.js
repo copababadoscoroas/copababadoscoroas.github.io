@@ -220,12 +220,20 @@ function cardJogo(j) {
     ? `<div class="placar-wrap"><div class="placar">${j.placar[0]} <span class="x">×</span> ${j.placar[1]}</div>${penInfo}</div>`
     : `<div class="placar futuro"><span class="hora">${fmtHora(j.data)}</span><span>${fmtData(j.data)}</span></div>`;
 
-  const eventos = j.placar && j.eventos ? `
+  let eventos;
+  if (j.placar && j.eventos && j.eventos.wo && j.eventos.wo.ausente) {
+    const aus = timePorId(j.eventos.wo.ausente);
+    eventos = `<div class="jogo-meta">🚫 <b>W.O.</b> — ${aus ? `${aus.bandeira} ${aus.nome}` : 'time'} não compareceu (vitória por 3×0)</div>`;
+  } else if (j.placar && j.eventos) {
+    eventos = `
     <div class="jogo-meta">
       ${j.eventos.gols.map((g) => `⚽ ${g.jogador}${g.assist ? ` <small>(assist. ${g.assist})</small>` : ''}`).join(' &nbsp;·&nbsp; ') || 'Sem gols'}
       ${j.eventos.amarelos.length ? `<br>🟨 ${j.eventos.amarelos.map((c) => c.jogador).join(', ')}` : ''}
       ${j.eventos.vermelhos.length ? `<br>🟥 ${j.eventos.vermelhos.map((c) => c.jogador).join(', ')}` : ''}
-    </div>` : (j.desc ? `<div class="jogo-meta">${j.desc}</div>` : '');
+    </div>`;
+  } else {
+    eventos = j.desc ? `<div class="jogo-meta">${j.desc}</div>` : '';
+  }
 
   return `
     <div class="jogo">
