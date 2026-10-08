@@ -138,9 +138,12 @@ const JOGOS = [
   { id: 9, rodada: 5, fase: 'Pontos Corridos', data: '2026-09-27T06:00:00-03:00', casa: 'argentina', fora: 'noruega', placar: null },
   { id: 10, rodada: 5, fase: 'Pontos Corridos', data: '2026-09-27T06:50:00-03:00', casa: 'franca', fora: 'portugal', placar: null },
 
-  // FASE FINAL — 11/10 (domingo)
-  { id: 11, rodada: 6, fase: 'Disputa 3º lugar', data: '2026-10-11T15:30:00-03:00', casa: null, fora: null, placar: null, desc: '3º colocado × 4º colocado' },
-  { id: 12, rodada: 6, fase: 'GRANDE FINAL', data: '2026-10-11T16:20:00-03:00', casa: null, fora: null, placar: null, desc: '1º colocado × 2º colocado' },
+  // FASE FINAL — QUADRANGULAR 11/10 (domingo): semifinais cruzadas (1º×4º e 2º×3º),
+  // depois disputa de 3º lugar (perdedores) e GRANDE FINAL (vencedores).
+  { id: 11, rodada: 6, fase: 'Semifinal', data: '2026-10-11T13:30:00-03:00', casa: null, fora: null, placar: null, desc: 'Semifinal 1 — 1º colocado × 4º colocado' },
+  { id: 12, rodada: 6, fase: 'Semifinal', data: '2026-10-11T14:20:00-03:00', casa: null, fora: null, placar: null, desc: 'Semifinal 2 — 2º colocado × 3º colocado' },
+  { id: 13, rodada: 6, fase: 'Disputa 3º lugar', data: '2026-10-11T15:30:00-03:00', casa: null, fora: null, placar: null, desc: 'Perdedores das semifinais' },
+  { id: 14, rodada: 6, fase: 'GRANDE FINAL', data: '2026-10-11T16:20:00-03:00', casa: null, fora: null, placar: null, desc: 'Vencedores das semifinais' },
 ];
 
 // --- Fotos por jogo (venda com cadeado) ------------------------

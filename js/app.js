@@ -71,16 +71,16 @@ function poeNumero(sel, valor) {
 }
 
 function atualizaContagem() {
-  // A copa já começou: agora a contagem é para as FINAIS (11/10).
-  // Alvo = próxima final ainda por vir (3º lugar 15h30 → Grande Final 16h20).
+  // Conta para o PRÓXIMO jogo da fase final (semifinais → 3º lugar → grande final).
+  const FASES_FINAIS = ['Semifinal', 'Disputa 3º lugar', 'GRANDE FINAL'];
   const finais = JOGOS
-    .filter((j) => j.fase === 'Disputa 3º lugar' || j.fase === 'GRANDE FINAL')
-    .map((j) => new Date(j.data).getTime())
-    .sort((a, b) => a - b);
+    .filter((j) => FASES_FINAIS.includes(j.fase))
+    .map((j) => ({ t: new Date(j.data).getTime(), fase: j.fase }))
+    .sort((a, b) => a.t - b.t);
   const agora = Date.now();
-  const grandeFinal = finais.length ? finais[finais.length - 1] : new Date(COPA.inicio).getTime();
-  const proxima = finais.find((t) => t > agora);
-  const alvo = proxima || grandeFinal;
+  const ultimo = finais.length ? finais[finais.length - 1].t : new Date(COPA.inicio).getTime();
+  const proxima = finais.find((f) => f.t > agora);
+  const alvo = proxima ? proxima.t : ultimo;
   let diff = Math.max(0, alvo - agora);
 
   const dias = Math.floor(diff / 86400000);
@@ -96,10 +96,13 @@ function atualizaContagem() {
   const rot = $('#contagem-rotulo');
   if (!proxima) {
     rot.textContent = '👑 Temos um campeão! Obrigado a todos!';
-  } else if (finais.length > 1 && alvo === finais[0]) {
-    rot.textContent = '🏆 Faltam para as FINAIS · dom 11/10, 15h30';
   } else {
-    rot.textContent = '🏆 Falta para a GRANDE FINAL · dom 11/10, 16h20';
+    const d = new Date(alvo);
+    const dia = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+    const hhmm = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+    const nome = proxima.fase === 'Semifinal' ? 'as SEMIFINAIS'
+      : (proxima.fase === 'Disputa 3º lugar' ? 'a disputa de 3º lugar' : 'a GRANDE FINAL');
+    rot.textContent = `🏆 Faltam para ${nome} · ${dia}, ${hhmm}`;
   }
 }
 
@@ -174,6 +177,7 @@ function calculaClassificacao() {
 }
 
 const ZONAS = ['zona-final', 'zona-final', 'zona-bronze', 'zona-bronze', 'zona-eliminado'];
+// 1º–4º vão ao quadrangular (semifinais 1º×4º e 2º×3º); 5º eliminado.
 
 function renderClassificacao() {
   const classi = calculaClassificacao();
@@ -192,8 +196,9 @@ function renderClassificacao() {
       </table>
     </div>
     <div class="card legenda-zonas">
-      <p>🟩 <b>1º e 2º</b> — fazem a GRANDE FINAL</p>
-      <p>🟨 <b>3º e 4º</b> — disputam o 3º lugar</p>
+      <p>🟩🟨 <b>1º ao 4º</b> — vão às <b>semifinais</b></p>
+      <p>🔀 <b>1º × 4º</b> e <b>2º × 3º</b></p>
+      <p>🏆 Vencedores → <b>GRANDE FINAL</b> · perdedores → <b>3º lugar</b></p>
       <p>🟥 <b>5º</b> — eliminado</p>
     </div>
     <div class="card legenda-zonas">
