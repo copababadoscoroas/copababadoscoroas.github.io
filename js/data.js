@@ -142,8 +142,8 @@ const JOGOS = [
   // depois disputa de 3º lugar (perdedores) e GRANDE FINAL (vencedores).
   { id: 11, rodada: 6, fase: 'Semifinal', data: '2026-10-11T06:00:00-03:00', casa: 'franca', fora: 'portugal', placar: null, desc: 'Semifinal 1' },
   { id: 12, rodada: 6, fase: 'Semifinal', data: '2026-10-11T06:50:00-03:00', casa: 'brasil', fora: 'noruega', placar: null, desc: 'Semifinal 2' },
-  { id: 13, rodada: 6, fase: 'Disputa 3º lugar', data: '2026-10-11T15:30:00-03:00', casa: null, fora: null, placar: null, desc: 'Perdedores das semifinais' },
-  { id: 14, rodada: 6, fase: 'GRANDE FINAL', data: '2026-10-11T16:20:00-03:00', casa: null, fora: null, placar: null, desc: 'Vencedores das semifinais' },
+  { id: 13, rodada: 6, fase: 'Disputa 3º lugar', data: '2026-10-18T15:30:00-03:00', casa: null, fora: null, placar: null, desc: 'Perdedores das semifinais' },
+  { id: 14, rodada: 6, fase: 'GRANDE FINAL', data: '2026-10-18T16:20:00-03:00', casa: null, fora: null, placar: null, desc: 'Vencedores das semifinais' },
 ];
 
 // --- Fotos por jogo (venda com cadeado) ------------------------
